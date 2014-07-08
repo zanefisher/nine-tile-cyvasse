@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Nine-Tile Cyvasse - Introduction</title>
+	<link rel="icon" type="image/png" href="art/favicon.png" />
+</head>
+<body>
+
+<img hidden id="BRabble" src="art/brabble.png">
+<img hidden id="BSpears" src="art/bspears_reverse.png">
+<img hidden id="BLightHorse" src="art/blighthorse.png">
+<img hidden id="BHeavyHorse" src="art/bheavyhorse.png">
+<img hidden id="BElephant" src="art/belephant.png">
+<img hidden id="BCrossbows" src="art/bcrossbows.png">
+<img hidden id="BTrebuchet" src="art/btrebuchet.png">
+<img hidden id="BDragon" src="art/bdragon.png">
+<img hidden id="BTower" src="art/btower.png">
+<img hidden id="BKing" src="art/bking.png">
+
+<img hidden id="WRabble" src="art/wrabble.png">
+<img hidden id="WSpears" src="art/wspears.png">
+<img hidden id="WLightHorse" src="art/wlighthorse.png">
+<img hidden id="WHeavyHorse" src="art/wheavyhorse.png">
+<img hidden id="WElephant" src="art/welephant.png">
+<img hidden id="WCrossbows" src="art/wcrossbows.png">
+<img hidden id="WTrebuchet" src="art/wtrebuchet.png">
+<img hidden id="WDragon" src="art/wdragon.png">
+<img hidden id="WTower" src="art/wtower.png">
+<img hidden id="WKing" src="art/wking.png">
+
+<div style="height:15px; width:990px; margin:auto; font-family:sans-serif; font-size:12px;">
+	<ul style="padding-left:0px; display:inline">
+		<li style="display:inline; padding:0.5em"><b>Nine-Tile Cyvasse</b></li>
+		<li style="display:inline; padding:0.5em"><a href="game.html">Play</a></li>
+		<li style="display:inline; padding:0.5em"><a href="introduction.html">Introduction</a></li>
+		<li style="display:inline; padding:0.5em"><a href="https://docs.google.com/file/d/0B3smNWZwMO2fZjc5aVZfLTdURlU">Rulebook</a></li>
+	</ul>
+</div>
+
+<table id="Table" style="margin:auto; font-family:sans-serif; font-size:14px">
+	<tr style="height:490px; vertical-align:top">
+		<td id="CanvasCell" style="width:640px">
+			<canvas id="Board" width="640" height="490" style="cursor:default">Oops. You broke it.</canvas>
+		</td>
+		<td style="width:350px">
+			<p id="HelpText">
+			<table style="margin:auto">
+				<tr>
+					<td>
+						<button id="PreviousButton" style="width:75px">Previous</button>
+						<button id="ResetButton" style="width:75px">Reset</button>
+						<button id="NextButton" style="width:75px">Next</button>
+					</td>
+				</tr>
+				<tr>
+					<p id="MoveCounter" style="font-size:18px"></p>
+					<p hidden id="HintText"></p>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div style="height:75px">
+				<table id="PieceInfo" style="margin:auto">
+					<tr>
+						<td>
+							<img id="PieceInfoImage">
+						</td>
+						<td>
+							<p id="PieceInfoText">
+						</td>
+					</tr>
+				</table>
+			</div>
+		</td>
+	</tr>
+</table>
+
+<script>
+
+//HTML objects
+
+var table = document.getElementById("Table");
+
+var canvasCell = document.getElementById("CanvasCell");
+var canvas = document.getElementById("Board");
+var ctx = canvas.getContext("2d");
+
+var helpText = document.getElementById("HelpText");
+
+var previousButton = document.getElementById("PreviousButton");
+var resetButton = document.getElementById("ResetButton");
+var nextButton = document.getElementById("NextButton");
+
+var pieceInfo = document.getElementById("PieceInfo");
+var pieceInfoImage = document.getElementById("PieceInfoImage");
+var pieceInfoText = document.getElementById("PieceInfoText");
+
+var moveCounter = document.getElementById("MoveCounter");
+
+
+//Graphics
+
+var pieceArt = new Array(20);
+pieceArt[0] = document.getElementById("WRabble");
+pieceArt[1] = document.getElementById("WSpears");
+pieceArt[2] = document.getElementById("WLightHorse");
+pieceArt[3] = document.getElementById("WHeavyHorse");
+pieceArt[4] = document.getElementById("WElephant");
+pieceArt[5] = document.getElementById("WCrossbows");
+pieceArt[6] = document.getElementById("WTrebuchet");
+pieceArt[7] = document.getElementById("WDragon");
+pieceArt[8] = document.getElementById("WTower");
+pieceArt[9] = document.getElementById("WKing");
+pieceArt[10] = document.getElementById("BRabble");
+pieceArt[11] = document.getElementById("BSpears");
+pieceArt[12] = document.getElementById("BLightHorse");
+pieceArt[13] = document.getElementById("BHeavyHorse");
+pieceArt[14] = document.getElementById("BElephant");
+pieceArt[15] = document.getElementById("BCrossbows");
+pieceArt[16] = document.getElementById("BTrebuchet");
+pieceArt[17] = document.getElementById("BDragon");
+pieceArt[18] = document.getElementById("BTower");
+pieceArt[19] = document.getElementById("BKing");
+
+var artLoaded = 0;
+
+function beginIfArtLoaded() {
+	if (++artLoaded == pieceArt.length) {
+		setPhase(0);
+	}
+}
+
+for (var i = 0; i < pieceArt.length; ++i) {
+	pieceArt[i].onload = beginIfArtLoaded;
+}
+
+squareSize = 50;
+leftMargin = 20;
+topMargin = 20;
+
+var showMoves = [];
+var showCaptures = [];
+
+var lastFrame = (new Date()).getTime();
+
+
+//Help Text
+
+pieceText = new Array(10);
+pieceText[0] = "<b>RABBLE</b><br>You may move 2 Rabble in the same turn, without capturing.";
+pieceText[1] = "<b>SPEARS</b><br>Can only capture and engage forwards.<br>Stops opponent's movement in the two squares directly in front of it.";
+pieceText[2] = "<b>LIGHT HORSE</b><br>Moves 3 squares. Can move past pieces it captures.";
+pieceText[3] = "<b>HEAVY HORSE</b><br>Heavy. Moves 2 squares. Can move past pieces it captures.";
+pieceText[4] = "<b>ELEPHANT</b><br>Heavy. Engagement range 2 squares.<br>Can move 2 squares to capture, but can't move through other pieces.";
+pieceText[5] = "<b>CROSSBOWS</b><br>Unarmored. Moves 2 squares. Engagement range 3 squares.<br>Can't capture.";
+pieceText[6] = "<b>TREBUCHET</b><br>Unarmored. Engagement range 4 squares, but can't engage adjacent pieces.<br>Captures pieces it's engaging by moving in the opposite direction.";
+pieceText[7] = "<b>DRAGON</b><br>Heavy. Moves 4 squares. Engagement range 2 squares.<br>Can move over mountains and opponent's pieces.";
+pieceText[8] = "<b>TOWER</b><br>Heavy. Can't move. When a piece is adjacent to an opposing Tower,<br>it can only engage that Tower.";
+pieceText[9] = "<b>KING</b><br>Can move to the other side of a Tower of the same color.";
+
+rangelessPieceText = new Array(10);
+rangelessPieceText[0] = "<b>RABBLE</b><br>You may move 2 Rabble in the same turn, without capturing.";
+rangelessPieceText[1] = "<b>SPEARS</b><br>Can only capture and engage forwards.<br>Stops opponent's movement in the two squares directly in front of it.";
+rangelessPieceText[2] = "<b>LIGHT HORSE</b><br>Moves 3 squares. Can move past pieces it captures.";
+rangelessPieceText[3] = "<b>HEAVY HORSE</b><br>Heavy. Moves 2 squares. Can move past pieces it captures.";
+rangelessPieceText[4] = "<b>ELEPHANT</b><br>Heavy. Can move 2 squares to capture, but can't move through other pieces.";
+rangelessPieceText[5] = "<b>CROSSBOWS</b><br>Unarmored. Moves 2 squares. Can't capture.";
+rangelessPieceText[6] = "<b>TREBUCHET</b><br>Unarmored. Captures pieces it's engaging by moving in the opposite direction.";
+rangelessPieceText[7] = "<b>DRAGON</b><br>Heavy. Moves 4 squares. Can move over mountains and opponent's pieces.";
+rangelessPieceText[8] = "<b>TOWER</b><br>Heavy. Can't move. When a piece is adjacent to an opposing Tower,<br>it can only engage that Tower.";
+rangelessPieceText[9] = "<b>KING</b><br>Can move to the other side of a Tower of the same color.";
+
+var displayedPiece = null;
+
+function showPieceInfo(piece) {
+	displayedPiece = piece;
+	if (piece == null) {
+		pieceInfo.hidden = true;
+	} else {
+		pieceInfoImage.src = pieceArt[piece.type + (10 * piece.color)].src;
+		pieceInfoText.innerHTML = (phase >= 4 ? pieceText[piece.type] : rangelessPieceText[piece.type]);
+		pieceInfo.hidden = false;
+	}
+}
+
+
+//Component Values
+
+terType = {open: 0, water: 1, mountain: 2};
+
+pieceType = {rabble: 0, spears: 1, lightHorse: 2, heavyHorse: 3,
+		elephant: 4, crossbows: 5, trebuchet: 6, dragon: 7, tower: 8, king: 9};
+
+pieceArmor =			[1, 1, 1, 2, 2, 0, 0, 2, 2, 1];
+pieceMovement =			[1, 1, 3, 2, 1, 2, 1, 4, 0, 1];
+pieceRange =			[1, 1, 1, 1, 2, 3, 4, 2, 1, 1];
+
+
+//Game State
+
+var moveCount = 0;
+var moveLimit = 0;
+
+var mode = {current: 0, setup: 0, hotseat: 1, sandbox: 2};
+
+function setMode(newMode) {
+	switch(newMode) {
+	case mode.hotseat:
+		endTurnButton.innerHTML = "End Turn";
+		break;
+	case mode.sandbox:
+		endTurnButton.innerHTML = "Redo";
+		break;
+	}
+	mode.current = newMode;
+}
+
+var phase;
+
+function setPhase(newPhase) {
+
+	previousButton.disabled = newPhase == 0;
+	nextButton.disabled = (newPhase == 8) || (newPhase == 0);
+
+	clearBoard();
+	targetHex = null;
+	moveCount = 0;
+	moveLimit = 0;
+
+	if (newPhase != phase) {
+		HintText.hidden = true;
+		HintText.innerHTML = "";
+	}
+
+	switch(newPhase) {
+	case 0:
+		helpText.innerHTML = "Most types of pieces, like this <img src=\"art/wrabble.png\" width=\"20\" height=\"20\"> Rabble, move one square at a time.<br><br>Move the Rabble to the circle.";
+		createPiece(pieceType.rabble, 5, 4, playerColor);
+		targetHex = {x: 6, y: 7};
+		break;
+	case 1:
+		helpText.innerHTML = "The <img src=\"art/wlighthorse.png\" width=\"20\" height=\"20\"> Light Horse can move three spaces at a time.<br><br>The <img src=\"art/wtower.png\" width=\"20\" height=\"20\"> Tower cannot move at all.<br><br>The squares marked with an 'X' are <b>mountains</b>, which pieces cannot move onto.<br><br>Pieces of the same color can move through one another's squares.<br><br>Move the Light Horse to the circle.";
+		createMountainRange();
+		board[hexToIndex(5, 3)].terrain = terType.open;
+		board[hexToIndex(6, 5)].terrain = terType.mountain;
+		createPiece(pieceType.lightHorse, 5, 3, playerColor);
+		createPiece(pieceType.tower, 7, 10, !playerColor);
+		createPiece(pieceType.tower, 8, 9, playerColor);
+		createPiece(pieceType.tower, 10, 10, !playerColor);
+		createPiece(pieceType.tower, 5, 8, playerColor);
+		createPiece(pieceType.tower, 6, 7, !playerColor);
+		createPiece(pieceType.tower, 8, 7, playerColor);
+		createPiece(pieceType.tower, 10, 8, playerColor);
+		targetHex = {x: 9, y: 11};
+		break;
+	case 2:
+		helpText.innerHTML = "Mouse over a piece to see its name and special properties.<br><br><b>Capturing</b> works like normal movement, but the capture must be made <b>along a straight line</b> (i.e. in one of the six directions pictured below).<br><br><img src=\"art/directions.png\"><br><br>When you can make a capture, it will show up as a red dot.<br><br>Use the Dragon to capture all the Crossbows.";
+		createPiece(pieceType.dragon, 6, 6, playerColor);
+		createPiece(pieceType.crossbows, 4, 7, !playerColor);
+		createPiece(pieceType.crossbows, 7, 8, !playerColor);
+		createPiece(pieceType.crossbows, 5, 4, !playerColor);
+		createPiece(pieceType.crossbows, 8, 5, !playerColor);
+		createPiece(pieceType.crossbows, 7, 10, !playerColor);
+		createPiece(pieceType.crossbows, 5, 2, !playerColor);
+		// board[hexToIndex(6, 3)].terrain = terType.mountain;
+		// board[hexToIndex(5, 3)].terrain = terType.mountain;
+		// board[hexToIndex(6, 9)].terrain = terType.mountain;
+		// board[hexToIndex(7, 9)].terrain = terType.mountain;
+		break;
+	case 3:
+		helpText.innerHTML = "Unlike those <b>unarmored</b> Crossbows, most pieces must be <b>engaged</b> before they can be captured.<br><br>Pieces automatically engage any adjcacent opposing piece. You can tell if a peice is being engaged by mousing over it: <b>red arrows</b> will appear to indicate which piece is engaging it.<br><br>Use the Light Horse to engage and capture all the Rabble in 4 moves.";
+		HintText.innerHTML = "(HINT: The Light Horse has a special property that allows it to \"jump\" over pieces it captures. Each time you capture a Rabble, make sure to land where you can engage another Rabble, so you can capture it immediately next move.)";
+		moveLimit = 4;
+		createPiece(pieceType.lightHorse, 4, 3, playerColor);
+		createPiece(pieceType.rabble, 5, 4, !playerColor);
+		createPiece(pieceType.rabble, 8, 7, !playerColor);
+		createPiece(pieceType.rabble, 7, 7, !playerColor);
+		createPiece(pieceType.rabble, 4, 6, !playerColor);
+		break;
+	case 4:
+		helpText.innerHTML = "Some pieces can engage at a distance.<br><br>Crossbows have an <b>engagement range</b> of 3, which means they can engage other pieces up to 3 squares away, <b>along a straight line</b>.<br><br>Mousing over a piece will show its engagement range, represented by yellow arrowheads.<br><br>You do not have to capture using the same piece that is engaging the captured piece.<br><br>Capture all the Rabble in 4 moves.";
+		HintText.innerHTML = "(HINT: You will only be able to move the Crossbows once. After capturing the first Rabble, try to position the Crossbows where it will engage both the remaining Rabble at the same time.)";
+		moveLimit = 4;
+		createPiece(pieceType.lightHorse, 4, 3, playerColor);
+		createPiece(pieceType.crossbows, 8, 7, playerColor);
+		createPiece(pieceType.rabble, 4, 5, !playerColor);
+		createPiece(pieceType.rabble, 7, 6, !playerColor);
+		createPiece(pieceType.rabble, 7, 8, !playerColor);
+		break;
+	case 5:
+		helpText.innerHTML = "Lines of engagement cannont pass over mountains. They also cannot pass over enemy pieces.<br><br>For example, the rightmost Rabble is not engaged by the Crossbows because the line of engagement is blocked by the Rabble to its left.<br><br>Capture all the Rabble in 5 moves. (You don't need to move the Crossbows this time.)";
+		moveLimit = 5;
+		createPiece(pieceType.crossbows, 3, 3, playerColor);
+		createPiece(pieceType.lightHorse, 5, 8, playerColor);
+		createPiece(pieceType.tower, 3, 4, playerColor);
+		board[hexToIndex(4, 3)].terrain = terType.mountain;
+		createPiece(pieceType.rabble, 3, 6, !playerColor);
+		createPiece(pieceType.rabble, 5, 5, !playerColor);
+		createPiece(pieceType.rabble, 6, 6, !playerColor);
+		createPiece(pieceType.rabble, 6, 3, !playerColor);
+		break;
+	case 6:
+		helpText.innerHTML = "<b>Heavy</b> pieces like the Tower must by engaged by <i>two</i> pieces before they can be captured.<br><br>Mousing over a piece will show you how many pieces are engaging it&#8212if it can be captured, the information will show up in red.<br><br>The gray squares are <b>water</b>. Pieces in water cannot engage at all.<br><br>Capture the Towers in 3 moves.";
+		createPiece(pieceType.crossbows, 4, 3, playerColor);
+		createPiece(pieceType.crossbows, 7, 8, playerColor);
+		createPiece(pieceType.heavyHorse, 7, 6, playerColor);
+		createPiece(pieceType.tower, 4, 6, !playerColor);
+		createPiece(pieceType.tower, 6, 6, !playerColor);
+		board[hexToIndex(4, 4)].terrain = terType.water;
+		board[hexToIndex(4, 5)].terrain = terType.water;
+		board[hexToIndex(4, 6)].terrain = terType.water;
+		board[hexToIndex(5, 6)].terrain = terType.water;
+		board[hexToIndex(5, 7)].terrain = terType.water;
+		moveLimit = 3;
+		break;
+	case 7:
+		helpText.innerHTML = "Spears can only engage and capture forwards.<br><br>Any piece that enters a square directly in front of an opposing Spears must end its movement in that square. Blue octagons indicate spaces where a piece is stopped by an enemy Spears.<br><br>Capture all the Spears in 6 moves.";
+		moveLimit = 6;
+		createPiece(pieceType.spears, 3, 5, !playerColor);
+		createPiece(pieceType.spears, 5, 7, !playerColor);
+		createPiece(pieceType.spears, 6, 8, !playerColor);
+		createPiece(pieceType.spears, 7, 7, !playerColor);
+		createPiece(pieceType.lightHorse, 5, 5, playerColor);
+		createPiece(pieceType.crossbows, 3, 2, playerColor);
+		createPiece(pieceType.spears, 6, 5, playerColor);
+		createPiece(pieceType.spears, 7, 8, playerColor);
+		break;
+	case 8:
+		helpText.innerHTML = "The object of the game is to capture your opponent's King.<br><br>Capture black's King in 7 moves. When you're finished, you can play <a href=\"file:///Users/zanefisher/Desktop/Cyvasse/cyvasse.html\">here</a>.";
+		HintText.innerHTML = "(HINT: you've seen Towers before, but this time it's important to note that they prevent adjacent enemy pieces from engaging other. You may need to capture one of the Towers before going after the King.)";
+		moveLimit = 7;
+		createPiece(pieceType.heavyHorse, 4, 2, playerColor);
+		createPiece(pieceType.elephant, 7, 5, playerColor);
+		createPiece(pieceType.trebuchet, 7, 6, playerColor);
+		createPiece(pieceType.king, 6, 5, playerColor);
+		createPiece(pieceType.tower, 6, 4, playerColor);
+		createPiece(pieceType.rabble, 4, 4, !playerColor);
+		createPiece(pieceType.rabble, 5, 5, !playerColor);
+		board[hexToIndex(6, 6)].terrain = terType.water;
+		createPiece(pieceType.rabble, 7, 7, !playerColor);
+		createPiece(pieceType.tower, 3, 5, !playerColor);
+		createPiece(pieceType.tower, 6, 8, !playerColor);
+		createPiece(pieceType.spears, 4, 6, !playerColor);
+		createPiece(pieceType.spears, 5, 7, !playerColor);
+		createPiece(pieceType.king, 4, 7, !playerColor);
+		board[hexToIndex(3, 7)].terrain = terType.mountain;
+		board[hexToIndex(4, 8)].terrain = terType.mountain;
+		break;
+	}
+	phase = newPhase;
+	draw();
+	updateMoveCounter();
+}
+
+var board = new Array(88);
+for (var i = 0; i < 88; ++i) {
+	board[i] = {piece: null, terrain: terType.open};
+}
+
+var targetHex = null;
+
+var playerColor = false;
+var topColor = true;
+
+var playerPieces = [];
+
+var opponentPieces = [];
+
+
+//Mouse Info
+
+var mouseX = 0;
+var mouseY = 0;
+var mouseDown = false;
+var movingPiece = null;
+var movingPieceX = 0;
+var movingPieceY = 0;
+var grabX = 0;
+var grabY = 0;
+var moved = false;
+
+
+//Misc Utilities
+
+function containsHex(array, x, y) {
+	for (var i = 0; i < array.length; ++i) {
+		if ((array[i].x == x) && (array[i].y == y)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function getItemAtHex(array, x, y) {
+	for (var i = 0; i < array.length; ++i) {
+		if ((array[i].x == x) && (array[i].y == y)) {
+			return array[i];
+		}
+	}
+	return null;
+}
+
+function playerOwns(piece) {
+	return piece.color == playerColor;
+}
+
+
+//Board Math
+
+function updateMousePos(event) {
+	mouseX = (event.clientX + document.body.scrollLeft) - (table.offsetLeft + canvasCell.offsetLeft + canvas.offsetLeft);
+	mouseY = (event.clientY + document.body.scrollTop) - (table.offsetTop + canvasCell.offsetTop + canvas.offsetTop);
+}
+
+var unitMoves = [{x: 1, y: 1},
+                {x: 1, y: 0},
+                {x: 0, y: -1},
+                {x: -1, y: -1},
+                {x: -1, y: 0},
+                {x: 0, y: 1}];
+
+function sumPos(left, right) {
+    return {x: left.x + right.x, y: left.y + right.y};
+}
+
+function hexInBounds(x, y) {
+	return (Math.abs(x - y) < 5) &&
+		(x >= 0) &&
+		(x < 12) &&
+		(y >= 0) &&
+		(y < 12);
+}
+
+function hexPosX(x, y) {
+	return ((x + y) * (squareSize / 2)) + leftMargin;
+}
+
+function hexPosY(x, y) {
+	return ((4 - (y - x)) * squareSize) + topMargin;
+}
+
+function hexPos(x, y) {
+	return {x: ((x + y) * (squareSize / 2)) + leftMargin,
+			y: ((4 - (y - x)) * squareSize) + topMargin};
+}
+
+function hexAtPos(x, y) {
+	var tileY = Math.floor((y - topMargin) / squareSize);
+	var offset = (4 - tileY) * (squareSize/2);
+	var tileX = Math.floor(((x - offset) - leftMargin) / squareSize);
+	return {x: tileX, y: tileX + (4 - tileY)};
+}
+
+function hexToIndex(x, y) {
+	switch(x - y + 4) {
+	case 0:
+		return x - 0;
+	case 1:
+		return x + 8;
+	case 2:
+		return x + 17;
+	case 3:
+		return x + 27;
+	case 4:
+		return x + 38;
+	case 5:
+		return x + 49;
+	case 6:
+		return x + 59;
+	case 7:
+		return x + 68;
+	case 8:
+		return x + 76;
+	}
+}
+
+function indexToHex(i) {
+	var hex = {x: -1, y: -1};
+	if ((i >= 0) && (i < 8)) {
+		hex.x = i;
+		hex.y = i + 4;
+	} else if (i < 17) {
+		hex.x = i - 8;
+		hex.y = i - 5;
+	} else if (i < 27) {
+		hex.x = i - 17;
+		hex.y = i - 15;
+	} else if (i < 38) {
+		hex.x = i - 27;
+		hex.y = i - 26;
+	} else if (i < 50) {
+		hex.x = i - 38;
+		hex.y = i - 38;
+	} else if (i < 61) {
+		hex.x = i - 49;
+		hex.y = i - 50;
+	} else if (i < 71) {
+		hex.x = i - 59;
+		hex.y = i - 61;
+	} else if (i < 80) {
+		hex.x = i - 68;
+		hex.y = i - 71;
+	} else if (i < 88) {
+		hex.x = i - 76;
+		hex.y = i - 80;
+	}
+	return hex;
+}
+
+function posInBounds(x, y, boundX, boundY, width, height) {
+	return (x > boundX) && (x < boundX + width) && (y > boundY) && (y < boundY + height);
+}
+
+function distance(x1, y1, x2, y2) {
+	return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+}
+
+function hexDistance(x1, y1, x2, y2) {
+	var dx = x1 - x2;
+	var dy = y1 - y2;
+	if ((dx * dy) > 0) {
+        return (Math.abs(dx + dy) + Math.abs(dx - dy)) / 2;
+    } else {
+        return Math.abs(dx - dy);
+    }
+}
+
+
+//Draw Functions
+
+function drawSquare(x, y, terrain) {
+	ctx.beginPath();
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = "#000000";
+	if (terrain == terType.water) {
+		ctx.fillStyle = "#C0C0C0";
+	} else {
+		ctx.fillStyle = "#FFFFFF";
+	}
+	ctx.rect(x, y, squareSize, squareSize);
+	ctx.fillRect(x, y, squareSize, squareSize);
+	if (terrain == terType.mountain) {
+		ctx.moveTo(x,y);
+		ctx.lineTo(x + squareSize, y + squareSize);
+		ctx.moveTo(x + squareSize, y);
+		ctx.lineTo(x, y + squareSize);
+	}
+	ctx.stroke();
+}
+
+function drawBoard() {
+	for (var i = 0; i < 88; ++i) {
+		var hex = indexToHex(i);
+		var pos = hexPos(hex.x, hex.y);
+		drawSquare(pos.x, pos.y, board[i].terrain);
+	}
+}
+
+function drawTargetMarker() {
+	if (targetHex != null) {
+		ctx.beginPath();
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = "#000000";
+		var x = hexPosX(targetHex.x, targetHex.y) + squareSize/2;
+		var y = hexPosY(targetHex.x, targetHex.y) + squareSize/2;
+		ctx.arc(x, y, squareSize/6, 0, 2*Math.PI);
+		ctx.stroke();
+	}
+}
+
+function drawPiece(piece) {
+	ctx.beginPath();
+	ctx.lineWidth = 1.5;
+	ctx.strokeStyle = "#000000";
+	ctx.fillStyle = "#FFFFFF";
+	var x = 0;
+	var y = 0;
+	if (piece == movingPiece) {
+		x = movingPieceX;
+		y = movingPieceY;
+	} else {
+		var pos = hexPos(piece.x, piece.y);
+		x = pos.x + squareSize/2;
+		y = pos.y + squareSize/2;
+	}
+	var radius = (2/5) * squareSize;
+	var artIndex = piece.type + (piece.color * 10);
+	if (squareSize == 50) {
+		ctx.drawImage(pieceArt[artIndex], x - radius - 1, y - radius - 1);
+	} else {
+		ctx.drawImage(pieceArt[artIndex], x - radius, y - radius, 2 * radius, 2 * radius);
+	}
+}
+
+const twiceRootThree = 2 * Math.sqrt(3);
+
+function traceLeftArrowHead(x, y) {
+	ctx.moveTo(x - 4, y);
+	ctx.lineTo(x + 2, y + twiceRootThree);
+	ctx.lineTo(x + 2, y - twiceRootThree);
+	ctx.lineTo(x - 4, y);
+	ctx.closePath();
+}
+
+function traceRightArrowHead(x, y) {
+	ctx.moveTo(x + 4, y);
+	ctx.lineTo(x - 2, y + twiceRootThree);
+	ctx.lineTo(x - 2, y - twiceRootThree);
+	ctx.lineTo(x + 4, y);
+	ctx.closePath();
+}
+
+function drawEngagementLine(engager, engaged, red) {
+	var engagerPos = hexPos(engager.x, engager.y);
+	var engagedPos = hexPos(engaged.x, engaged.y);
+	var dist = distance(engagerPos.x, engagerPos.y, engagedPos.x, engagedPos.y);
+	var endPointX = engagedPos.x + squareSize/2 + ((2/5) * squareSize * (engagerPos.x - engagedPos.x) / dist);
+	var endPointY = engagedPos.y + squareSize/2 + ((2/5) * squareSize * (engagerPos.y - engagedPos.y) / dist);
+
+	var traceArrowHead;
+	if ((engagerPos.x < engagedPos.x) != (engagerPos.y == engagedPos.y)) {
+		traceArrowHead = traceLeftArrowHead;
+	} else {
+		traceArrowHead = traceRightArrowHead;
+	}
+
+	ctx.beginPath();
+	ctx.lineWidth = 4;
+	ctx.strokeStyle = "#000000";
+	ctx.moveTo(engagerPos.x + squareSize/2, engagerPos.y + squareSize/2);
+	ctx.lineTo(endPointX, endPointY);
+	traceArrowHead(endPointX, endPointY);
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = (red ? "#FF0000" : "#FFFFFF");
+	ctx.fillStyle = ctx.strokeStyle;
+	ctx.moveTo(engagerPos.x + squareSize/2, engagerPos.y + squareSize/2);
+	ctx.lineTo(endPointX, endPointY);
+	traceArrowHead(endPointX, endPointY);
+	ctx.stroke();
+	ctx.fill();
+}
+
+function drawRangeMarker(piece, marker) {
+    var x = hexPosX(marker.x, marker.y) + squareSize/2;
+    var y = hexPosY(marker.x, marker.y) + squareSize/2;
+    if ((piece.x + piece.y > marker.x + marker.y) != (piece.x - piece.y == marker.x - marker.y)) {
+        traceArrowHead = traceRightArrowHead;
+    } else {
+        traceArrowHead = traceLeftArrowHead;
+    }
+    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#000000";
+    traceArrowHead(x, y);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#FFFFCC";
+    ctx.fillStyle = "#FFFFCC";
+    traceArrowHead(x, y);
+    ctx.stroke();
+    ctx.fill();
+}
+
+function drawEngagement() {
+    var piece = pieceUnderMouse();
+
+    if (piece != null) {
+        var engagement = getEngagement(piece);
+        var rangeMarkers = getRangeMarkers(piece);
+        var armor = pieceArmor[piece.type];
+        var red = engagement >= armor;
+
+        //draw lines
+        for (var i = 0; i < engagers.length; ++i) {
+            drawEngagementLine(engagers[i], piece, red);
+        }
+
+        //draw engagers over lines
+        for (var i = 0; i < engagers.length; ++i) {
+            drawPiece(engagers[i]);
+        }
+
+        //draw range markers
+        if (phase >= 4) {
+	        for (var i = 0; i < rangeMarkers.length; ++i) {
+	            drawRangeMarker(piece, rangeMarkers[i]);
+	        }
+	    }
+
+		//draw numbers
+		if (phase >= 6) {
+			ctx.beginPath();
+			ctx.lineWidth = 3;
+			if (phase == 6) {
+				ctx.font = "bold 16px sans-serif"
+			} else {
+				ctx.font = "bold 12px sans-serif"
+			}
+			ctx.textAlign = "center";
+			ctx.strokeStyle = "#000000";
+			ctx.fillStyle = (red ? "#FF0000" : "#FFFFFF");
+			var text = engagement + "/" + armor;
+			var x = hexPosX(piece.x, piece.y) + squareSize/2;
+			var y = hexPosY(piece.x, piece.y) + squareSize;
+			ctx.strokeText(text, x, y);
+			ctx.fillText(text, x, y);
+			ctx.stroke();
+		}
+	}
+}
+
+function drawMoveDot(x, y, color) {
+    ctx.beginPath();
+    //ctx.lineWidth = 1.5;
+    //ctx.strokeStyle = "#000000";
+    ctx.fillStyle = color;
+    var xPos = hexPosX(x, y) + squareSize/2;
+    var yPos = hexPosY(x, y) + squareSize/2;
+    ctx.moveTo(xPos + squareSize/6, yPos);
+    ctx.arc(xPos, yPos, squareSize/6, 0, 2*Math.PI);
+    ctx.fill();
+    //ctx.stroke();
+}
+
+function drawMoveOctagon(x, y, color) {
+    ctx.beginPath();
+    //ctx.lineWidth = 1.5;
+    //ctx.strokeStyle = "#000000";
+    ctx.fillStyle = color;
+    var xPos = hexPosX(x, y) + squareSize/2;
+    var yPos = hexPosY(x, y) + squareSize/2;
+    // ctx.moveTo(xPos - squareSize/15, yPos - squareSize/6);
+    // ctx.lineTo(xPos + squareSize/15, yPos - squareSize/6);
+    // ctx.lineTo(xPos + squareSize/6, yPos - squareSize/15);
+    // ctx.lineTo(xPos + squareSize/6, yPos + squareSize/15);
+    // ctx.lineTo(xPos + squareSize/15, yPos + squareSize/6);
+    // ctx.lineTo(xPos - squareSize/15, yPos + squareSize/6);
+    // ctx.lineTo(xPos - squareSize/6, yPos + squareSize/15);
+    // ctx.lineTo(xPos - squareSize/6, yPos - squareSize/15);
+    // ctx.lineTo(xPos - squareSize/15, yPos - squareSize/6);
+    ctx.moveTo(xPos - squareSize/12, yPos - squareSize/5);
+    ctx.lineTo(xPos + squareSize/12, yPos - squareSize/5);
+    ctx.lineTo(xPos + squareSize/5, yPos - squareSize/12);
+    ctx.lineTo(xPos + squareSize/5, yPos + squareSize/12);
+    ctx.lineTo(xPos + squareSize/12, yPos + squareSize/5);
+    ctx.lineTo(xPos - squareSize/12, yPos + squareSize/5);
+    ctx.lineTo(xPos - squareSize/5, yPos + squareSize/12);
+    ctx.lineTo(xPos - squareSize/5, yPos - squareSize/12);
+    ctx.lineTo(xPos - squareSize/12, yPos - squareSize/5);
+    ctx.fill();
+}
+
+function drawMoves() {
+    if ((showMoves != []) || (showCaptures != [])) {
+        var spearblocks = getSpearBlocks(movingPiece != null);
+        for (var i = 0; i < showMoves.length; ++i) {
+            var hex = showMoves[i];
+            if (!containsHex(showCaptures, hex.x, hex.y)) {
+                if (containsHex(spearblocks, hex.x, hex.y)) {
+                    drawMoveOctagon(hex.x, hex.y, "#0000FF");
+                } else {
+                    drawMoveDot(hex.x, hex.y, "#0000FF");
+                }
+            }
+        }
+        for (var i = 0; i < showCaptures.length; ++i) {
+            hex = showCaptures[i];
+    		ctx.beginPath();
+        	ctx.lineWidth = 4;
+        	ctx.strokeStyle = "#FF0000";
+        	ctx.moveTo(hexPosX(movingPiece.x, movingPiece.y) + squareSize/2, hexPosY(movingPiece.x, movingPiece.y) + squareSize/2);
+        	ctx.lineTo(hexPosX(hex.x, hex.y) + squareSize/2, hexPosY(hex.x, hex.y) + squareSize/2);
+        	ctx.stroke();      	
+            if (containsHex(spearblocks, hex.x, hex.y)) {
+                drawMoveOctagon(hex.x, hex.y, "#FF0000");
+            } else {
+                drawMoveDot(hex.x, hex.y, "#FF0000");
+            }
+        }
+    }
+}
+
+function draw() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	drawBoard();
+	drawTargetMarker();
+	for (var i = 0; i < opponentPieces.length; ++i) {
+		drawPiece(opponentPieces[i]);
+	}
+	for (var i = 0; i < playerPieces.length; ++i) {
+		drawPiece(playerPieces[i]);
+	}
+	drawMoves();
+	if (mouseDown) {
+		if (movingPiece != null) {
+			drawPiece(movingPiece);
+		}
+	} else if (phase >= 3) {
+		drawEngagement();
+	}
+}
+
+
+//Game Logic
+
+function adjacencies(x, y) {
+	var adjacencies = new Array();
+	if (hexInBounds(x + 1, y)) {
+		adjacencies.push({x: x + 1, y: y})
+	}
+	if (hexInBounds(x + 1, y + 1)) {
+		adjacencies.push({x: x + 1, y: y + 1})
+	}
+	if (hexInBounds(x, y + 1)) {
+		adjacencies.push({x: x, y: y + 1})
+	}
+	if (hexInBounds(x - 1, y)) {
+		adjacencies.push({x: x - 1, y: y})
+	}
+	if (hexInBounds(x - 1, y -1)) {
+		adjacencies.push({x: x - 1, y: y - 1})
+	}
+	if (hexInBounds(x, y - 1)) {
+		adjacencies.push({x: x, y: y - 1})
+	}
+	return adjacencies;
+}
+
+function straightPathTo(origin, target, range, blocked) {
+	if (origin.x == target.x) {
+		if (Math.abs(origin.y - target.y) > range) {
+			return false;
+		} 
+		var x = origin.x
+		for (var y = Math.min(origin.y, target.y) + 1; y <= Math.max(origin.y, target.y); ++y) {
+			var square = board[hexToIndex(x, y)];
+			if ((square.piece == target) || (square.piece == origin)) {
+				return true;
+			} else if (blocked(square, x, y)) {
+				return false;
+			}
+		}
+	} else if (origin.y == target.y) {
+		if (Math.abs(origin.x - target.x) > range) {
+			return false;
+		} 
+		var y = origin.y
+		for (var x = Math.min(origin.x, target.x) + 1; x <= Math.max(origin.x, target.x); ++x) {
+			var square = board[hexToIndex(x, y)];
+			if ((square.piece == target) || (square.piece == origin)) {
+				return true;
+			} else if (blocked(square, x, y)) {
+				return false;
+			}
+		}
+	} else if (origin.x - origin.y == target.x - target.y) {
+		if (Math.abs(origin.y - target.y) > range) {
+			return false;
+		} 
+		var diff = origin.x - origin.y
+		for (var y = Math.min(origin.y + 1, target.y + 1); y <= Math.max(origin.y, target.y); ++y) {
+			var x = y + diff;
+			var square = board[hexToIndex(x, y)];
+			if ((square.piece == target) || (square.piece == origin)) {
+				return true;
+			} else if (blocked(square, x, y)) {
+				return false;
+			}
+		}
+	}
+	return false;
+}
+
+function lineOfSight(origin, target, range) {
+	function blocked(square, x, y) {
+		return ((square.terrain == terType.mountain) ||
+				((square.piece != null) && (square.piece.color != origin.color)));
+	}
+	return straightPathTo(origin, target, range, blocked);
+}
+
+function getSpearBlocks(player) {
+	var blocks = new Array();
+	var pieces = (player ? opponentPieces : playerPieces);
+	for (var i = 0; i < pieces.length; ++i) {
+		var piece = pieces[i];
+		if (piece.type == pieceType.spears) {
+			if (piece.color == topColor) {
+				blocks.push({x: piece.x + 1, y: piece.y});
+				blocks.push({x: piece.x, y: piece.y - 1});
+			} else {
+				blocks.push({x: piece.x - 1, y: piece.y});
+				blocks.push({x: piece.x, y: piece.y + 1});
+			}
+		}
+	}
+	return blocks;
+}
+
+function lineOfAttack(origin, target, range) {
+	var spearBlocks = getSpearBlocks(playerOwns(origin));
+	function blocked(square, x, y) {
+		return ((square.terrain == terType.mountain) ||
+				((square.piece != null) && (square.piece.color != origin.color)) ||
+				(containsHex(spearBlocks, x, y)));
+	}
+	return straightPathTo(origin, target, range, blocked);
+}
+
+function lineOfFlight(origin, target, range) {
+	var spearBlocks = getSpearBlocks(playerOwns(origin));
+	function blocked(square, x, y) {
+		return (containsHex(spearBlocks, x, y));
+	}
+	return straightPathTo(origin, target, range, blocked);
+}
+
+function lineOfCharge(origin, target, range) {
+	var spearBlocks = getSpearBlocks(playerOwns(origin));
+	function blocked(square, x, y) {
+		return ((square.terrain == terType.mountain) ||
+				(square.piece != null) ||
+				(containsHex(spearBlocks, x, y)));
+	}
+	return straightPathTo(origin, target, range, blocked);
+}
+
+function lineOfSpear(origin, target) {
+	if (origin.color == topColor) {
+		return (((target.x == origin.x + 1) && (target.y == origin.y)) ||
+				((target.x == origin.x) && (target.y == origin.y - 1)));
+	} else {
+		return (((target.x == origin.x - 1) && (target.y == origin.y)) ||
+				((target.x == origin.x) && (target.y == origin.y + 1)));
+	}
+}
+
+function getAdjacentEnemyTowers(piece) {
+    var towers = [];
+    var adj = adjacencies(piece.x, piece.y);
+    for (var i = 0; i < adj.length; ++i) {
+        var hex = adj[i];
+        var square = board[hexToIndex(hex.x, hex.y)];
+        if ((square.piece != null) &&
+                (square.piece.type == pieceType.tower) &&
+                (square.piece.color != piece.color)) {
+            towers.push(square.piece);
+        }
+    }
+    return towers;
+}
+
+function engages(engager, engaged) {
+	if (engager.color == engaged.color) {
+		return false;
+	}
+	if (board[hexToIndex(engager.x, engager.y)].terrain == terType.water) {
+		return false;
+	}
+	var range = pieceRange[engager.type];
+
+	//special case for a piece next to an enemy tower
+	var adj = adjacencies(engager.x, engager.y)
+	for (var i = 0; i < adj.length; ++i) {
+		var hex = adj[i];
+		var square = board[hexToIndex(hex.x, hex.y)];
+		if ((square.piece != null) &&
+				(square.piece.type == pieceType.tower) &&
+				(square.piece.color != engager.color)) {
+			if (engaged.type != pieceType.tower) {
+				return false;
+			} else {
+				range = 1;
+			}
+		}
+	}
+
+	if (engager.type == pieceType.spears) {
+		return lineOfSpear(engager, engaged, range);
+    } else if ((engager.type == pieceType.trebuchet) && (distance(engager.x, engager.y, engaged.x, engaged.y) == 1)) {
+        return false;
+	} else {
+		return lineOfSight(engager, engaged, range);
+	}
+}
+
+function getRangeMarkers(piece) {
+    var markers = [];
+    var range = pieceRange[piece.type];
+    if (board[hexToIndex(piece.x, piece.y)].terrain != terType.water) {
+    	if (piece.type == pieceType.spears) {
+    		if (piece.color == topColor) {
+	    		markers.push({x: piece.x + 1, y: piece.y});
+	    		markers.push({x: piece.x, y: piece.y - 1});
+	    	} else {
+	    		markers.push({x: piece.x - 1, y: piece.y});
+	    		markers.push({x: piece.x, y: piece.y + 1});
+	    	}
+	    	return markers;
+    	}
+        var adjTowers = getAdjacentEnemyTowers(piece);
+        if (adjTowers.length > 0) {
+            return adjTowers;
+        }
+        for (var direction = 0; direction < 6; ++direction) {
+            var pos = {x: piece.x, y: piece.y};
+            for (var distance = 0; distance < range; ++distance) {
+                var otherPiece = board[hexToIndex(pos.x, pos.y)].piece;
+                if ((otherPiece != null) && (otherPiece.color != piece.color)) {
+                    break;
+                }
+                var nextPos = sumPos(pos, unitMoves[direction]);
+                if ((!hexInBounds(nextPos.x, nextPos.y)) || (board[hexToIndex(nextPos.x, nextPos.y)].terrain == terType.mountain)) {
+                    break;
+                }
+                pos = nextPos;
+	            if ((piece.type != pieceType.trebuchet) || (distance > 0)) {
+	                markers.push(pos);
+	            }
+            }
+        }
+    }
+    return markers;
+}
+
+// function getRangeMarkers(piece) {
+//     var markers = [];
+//     var range = pieceRange[piece.type];
+//     if ((range > 1) && (board[hexToIndex(piece.x, piece.y)].terrain != terType.water)) {
+//         var adjTowers = getAdjacentEnemyTowers(piece);
+//         if (adjTowers.length > 0) {
+//             return adjTowers;
+//         }
+//         for (var direction = 0; direction < 6; ++direction) {
+//             var pos = {x: piece.x, y: piece.y};
+//             for (var distance = 0; distance < range; ++distance) {
+//                 var otherPiece = board[hexToIndex(pos.x, pos.y)].piece;
+//                 if ((otherPiece != null) && (otherPiece.color != piece.color)) {
+//                     break;
+//                 }
+//                 var nextPos = sumPos(pos, unitMoves[direction]);
+//                 if ((!hexInBounds(nextPos.x, nextPos.y)) || (board[hexToIndex(nextPos.x, nextPos.y)].terrain == terType.mountain)) {
+//                     break;
+//                 }
+//                 pos = nextPos;
+//             }
+//             if ((distance > 0) && ((piece.type != pieceType.trebuchet) || (distance > 1))) {
+//                 markers.push(pos);
+//             }
+//         }
+//     }
+//     return markers;
+// }
+
+var engagers = new Array();
+
+function getEngagement(piece) {
+	var engagement = 0;
+	engagers = new Array();
+	if (playerOwns(piece)) {
+		for (var i = 0; i < opponentPieces.length; ++i) {
+			var enemyPiece = opponentPieces[i];
+			if (engages(enemyPiece, piece)) {
+				++engagement;
+				engagers.push(enemyPiece);
+			}
+		}
+	} else {
+		for (var i = 0; i < playerPieces.length; ++i) {
+			var enemyPiece = playerPieces[i];
+			if (engages(enemyPiece, piece)) {
+				++engagement;
+				engagers.push(enemyPiece);
+			}
+		}
+	}
+	return engagement;
+}
+
+function fullyEngaged(piece) {
+	return getEngagement(piece) >= pieceArmor[piece.type];
+}
+
+function breachCaptures(piece, captures) {
+	var range = pieceMovement[piece.type];
+	var spearBlocks = getSpearBlocks(playerOwns(piece));
+	for (var i = 0; i < captures.length; ++i) {
+		var x = captures[i].x;
+		var y = captures[i].y;
+		if (containsHex(spearBlocks, x, y)) { continue; }
+		var distance = hexDistance(piece.x, piece.y, x, y);
+		var dx = (x - piece.x) / distance;
+		var dy = (y - piece.y) / distance;
+		for (var d = distance; d < range; ++d) {
+			x += dx;
+			y += dy;
+			var square = board[hexToIndex(x, y)];
+			if (!hexInBounds(x, y) ||
+					(square.piece != null) ||
+					(square.terrain == terType.mountain)) {
+				break;
+			}
+			captures.push({x: x, y: y, captured: captures[i].captured});
+			if (containsHex(spearBlocks, x, y)) { break; }
+		}
+	}
+	return captures;
+}
+
+function rangedCaptures(piece, captures) {
+	var rangedCaptures = new Array();
+	if (board[hexToIndex(piece.x, piece.y)].terrain == terType.water) { return rangedCaptures; }
+	for (var i = 0; i < captures.length; ++i) {
+		var distance = hexDistance(piece.x, piece.y, captures[i].x, captures[i].y);
+		if (distance > 1) {
+			var x = piece.x - ((captures[i].x - piece.x) / distance);
+			var y = piece.y - ((captures[i].y - piece.y) / distance);
+			var square = board[hexToIndex(x, y)];
+			if ((hexInBounds(x, y)) && (square.piece == null) && (square.terrain != terType.mountain)) {
+				rangedCaptures.push({x: x, y: y, captured: captures[i].captured});
+			}
+		}
+	}
+	return rangedCaptures;
+}
+
+function getCaptures(piece) {
+
+	var captures = new Array();
+	var range = pieceMovement[piece.type];
+	var checkPath = lineOfAttack;
+	var enemyPieces = (playerOwns(piece) ? opponentPieces : playerPieces);
+
+	if (piece.type == pieceType.crossbows) {
+		return captures;
+	} else if (piece.type == pieceType.spears) {
+		checkPath = lineOfSpear;
+	} else if (piece.type == pieceType.dragon) {
+		checkPath = lineOfFlight;
+	} else if (piece.type == pieceType.elephant) {
+		checkPath = lineOfCharge;
+		range = 2;
+	} else if (piece.type == pieceType.trebuchet) {
+		checkPath = lineOfSight;
+		range = 4;
+	}
+
+	for (var i = 0; i < enemyPieces.length; ++i) {
+		var enemyPiece = enemyPieces[i];
+		if (fullyEngaged(enemyPiece) && checkPath(piece, enemyPiece, range)) {
+			captures.push({x: enemyPiece.x, y: enemyPiece.y, captured: enemyPiece});
+		}
+	}
+
+	if ((piece.type == pieceType.lightHorse) || (piece.type == pieceType.heavyHorse)) {
+		captures = breachCaptures(piece, captures);
+	} else if (piece.type == pieceType.trebuchet) {
+		captures = rangedCaptures(piece, captures);
+	}
+	return captures;
+}
+
+function getMovesFrom(x, y, distance, type, color, moves) {
+	var square = board[hexToIndex(x, y)];
+	var squareIsOpen = (square.piece == null) && (square.terrain != terType.mountain);
+	if ((squareIsOpen) && !(containsHex(moves, x, y))) {
+		moves.push({x: x, y: y});
+	}
+	if (distance < pieceMovement[type]) {
+		var spearBlocks = getSpearBlocks(playerPieces);
+		if (containsHex(spearBlocks, x, y)) {
+			return moves;
+		}
+	}
+	if ((distance != 0) && (squareIsOpen || ((square.piece != null) && (square.piece.color == color)) || (type == pieceType.dragon))) {
+		var adj = adjacencies(x, y);
+		for (var i = 0; i < adj.length; ++i) {
+			moves = getMovesFrom(adj[i].x, adj[i].y, distance - 1, type, color, moves);
+		}
+	}
+	return moves;
+}
+
+function getMoves(piece) {
+
+	var moves = getMovesFrom(piece.x, piece.y, pieceMovement[piece.type], piece.type, piece.color, new Array());
+
+	//special case for jumping
+	if (piece.type == pieceType.king) {
+		var adj = adjacencies(piece.x, piece.y);
+		for (var i = 0; i < adj.length; ++i) {
+			var square = board[hexToIndex(adj[i].x, adj[i].y)];
+			if ((square.piece != null) && (square.piece.type == pieceType.tower) && (square.piece.color == piece.color)) {
+				var x = (2 * adj[i].x) - piece.x;
+				var y = (2 * adj[i].y) - piece.y;
+				var squareBeyond = board[hexToIndex(x, y)];
+				if ((hexInBounds(x, y)) && (squareBeyond.piece == null) && (squareBeyond.terrain != terType.mountain)) {
+					moves.push({x: x, y: y});
+				}
+			}
+		}
+	}
+
+	return moves;
+}
+
+
+//Board Manipulation
+
+function objectiveComplete() {
+	if (phase == 8) {
+		for (var i = 0; i < opponentPieces.length; ++i) {
+			if (opponentPieces[i].type == pieceType.king) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+	} else {
+		return opponentPieces.length == 0;
+	}
+}
+
+function updateMoveCounter() {
+	if (moveLimit > 0) {
+		if (moveCount < moveLimit) {
+			MoveCounter.innerHTML = (moveLimit - moveCount) + " moves left."
+		} else {
+			if (objectiveComplete()) {
+				MoveCounter.innerHTML = "Success!";
+			} else {
+				MoveCounter.innerHTML = "<span style=\"color:red\"<b>" + (moveLimit - moveCount) + " moves left. Reset to try again.</b></span>"
+				HintText.hidden = false;
+			}
+		}
+	} else {
+		moveCounter.innerHTML = "";
+	}
+}
+
+function executeMove(move) {
+	//modify the board and pieces
+	var pieces = (move.color == playerColor ? playerPieces : opponentPieces);
+	var piece = getItemAtHex(pieces, move.x0, move.y0);
+	if (move.capture) {
+		var enemyPieces = (move.color == playerColor ? opponentPieces : playerPieces);
+		var enemyPiece = getItemAtHex(enemyPieces, move.x2, move.y2);
+		enemyPieces.splice(enemyPieces.indexOf(enemyPiece), 1);
+		board[hexToIndex(move.x2, move.y2)].piece = null;
+	}
+	piece.x = move.x1;
+	piece.y = move.y1;
+	board[hexToIndex(move.x0, move.y0)].piece = null;
+	board[hexToIndex(move.x1, move.y1)].piece = piece;
+	++moveCount;
+	updateMoveCounter();
+}
+
+function clearBoard() {
+	playerPieces = [];
+	opponentPieces = [];
+	for (var i = 0; i < 88; ++i) {
+		var square = board[i];
+		square.terrain = terType.open;
+		square.piece = null;
+	}
+}
+
+function createPiece(type, x, y, color) {
+	var piece = {type: type, x: x, y: y, color: color};
+	var pieces = (color == playerColor ? playerPieces : opponentPieces);
+	pieces.push(piece);
+	board[hexToIndex(x, y)].piece = piece;
+}
+
+function createMountainRange() {
+	board[hexToIndex(1, 5)].terrain = terType.mountain;
+	board[hexToIndex(3, 7)].terrain = terType.mountain;
+	board[hexToIndex(5, 9)].terrain = terType.mountain;
+	board[hexToIndex(7, 11)].terrain = terType.mountain;
+	board[hexToIndex(1, 3)].terrain = terType.mountain;
+	board[hexToIndex(3, 5)].terrain = terType.mountain;
+	board[hexToIndex(5, 7)].terrain = terType.mountain;
+	board[hexToIndex(7, 9)].terrain = terType.mountain;
+	board[hexToIndex(1, 1)].terrain = terType.mountain;
+	board[hexToIndex(3, 3)].terrain = terType.mountain;
+	board[hexToIndex(5, 5)].terrain = terType.mountain;
+	board[hexToIndex(7, 7)].terrain = terType.mountain;
+	board[hexToIndex(9, 9)].terrain = terType.mountain;
+	board[hexToIndex(11, 11)].terrain = terType.mountain;
+	board[hexToIndex(3, 1)].terrain = terType.mountain;
+	board[hexToIndex(5, 3)].terrain = terType.mountain;
+	board[hexToIndex(7, 5)].terrain = terType.mountain;
+	board[hexToIndex(9, 7)].terrain = terType.mountain;
+	board[hexToIndex(11, 9)].terrain = terType.mountain;
+	board[hexToIndex(5, 1)].terrain = terType.mountain;
+	board[hexToIndex(7, 3)].terrain = terType.mountain;
+	board[hexToIndex(9, 5)].terrain = terType.mountain;
+	board[hexToIndex(11, 7)].terrain = terType.mountain;
+}
+
+//Mouse Input
+
+function pieceUnderMouse() {
+	var hex = hexAtPos(mouseX, mouseY);
+	if (hexInBounds(hex.x, hex.y)) {
+		var piece = board[hexToIndex(hex.x, hex.y)].piece;
+		if (piece != null) {
+			var centerX = hexPosX(hex.x, hex.y) + squareSize/2;
+			var centerY = hexPosY(hex.x, hex.y) + squareSize/2;
+			if (distance(mouseX, mouseY, centerX, centerY) <= (2/5) * squareSize) {
+				return piece;
+			}
+		}
+	}
+	return null;
+}
+
+canvas.onmousemove = function(event) {
+	updateMousePos(event);
+	if (!mouseDown) {
+		var piece = pieceUnderMouse();
+		if (phase >= 2) {
+			if (piece != displayedPiece) {
+				showPieceInfo(piece);
+			}
+		}
+		if (piece != null) {
+			canvas.style.cursor = "pointer";
+		} else {
+			canvas.style.cursor = "default";
+		}
+	}
+	if (movingPiece != null) {
+		movingPieceX = mouseX - grabX;
+		movingPieceY = mouseY - grabY;
+	}
+	var now = (new Date()).getTime();
+	if ((now - lastFrame) > 15) {
+		draw();
+		lastFrame = now;
+	}
+	moved = true;
+};
+
+function interpretMove(piece, x, y) {
+	var moves = getMoves(piece);
+	var captures = getCaptures(piece);
+	var move = {x0: piece.x, y0: piece.y, x1: x, y1: y, capture: false, color: piece.color, type: piece.type};
+	if (containsHex(captures, x, y)) {
+		move.capture = true;
+		var captured = getItemAtHex(captures, x, y).captured
+		move.capType = captured.type;
+		move.x2 = captured.x;
+		move.y2 = captured.y;
+	} else if (!containsHex(moves, x, y)) {
+		return null;
+	}
+	return move;
+}
+
+canvas.onmouseup = function() {
+	mouseDown = false;
+	if (movingPiece != null) {
+		var hex = hexAtPos(movingPieceX, movingPieceY);
+		var move = interpretMove(movingPiece, hex.x, hex.y);
+		if (move != null) {
+			executeMove(move);
+		}
+		movingPiece = null;
+	}
+	showMoves = [];
+	showCaptures = [];
+	draw();
+
+	if (nextButton.disabled && (phase == 0)) {
+		nextButton.disabled = (playerPieces[0].x != 6) || (playerPieces[0].y != 7);
+	}
+};
+
+function moveToFront(item, list) {
+	list.splice(list.indexOf(item), 1);
+	list.push(item);
+}
+
+canvas.onmousedown = function() {
+	event.preventDefault();
+	mouseDown = true;
+	var x = mouseX;
+	var y = mouseY;
+	var piece = pieceUnderMouse();
+	if (piece != null) {
+		if ((playerOwns(piece) || (phase == 7)) &&
+				((moveLimit == 0) || (moveCount < moveLimit))) {
+			movingPiece = piece;
+			movingPieceX = hexPosX(piece.x, piece.y) + squareSize/2;
+			movingPieceY = hexPosY(piece.x, piece.y) + squareSize/2;
+			grabX = x - movingPieceX;
+			grabY = y - movingPieceY;
+			moveToFront(piece, (playerOwns(piece) ? playerPieces : opponentPieces));
+		}
+		showMoves = getMoves(piece);
+		showCaptures = getCaptures(piece);
+	}
+	draw();
+};
+
+
+// Interface
+
+previousButton.onclick = function() {
+	setPhase(phase - 1);
+}
+
+resetButton.onclick = function() {
+	setPhase(phase);
+}
+
+nextButton.onclick = function() {
+	setPhase(phase + 1);
+}
+
+</script>
+</body>
+</html>
