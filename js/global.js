@@ -134,6 +134,11 @@ var displayedPiece = null;
 
 // Misc Utilities
 
+// Set the visibility of an HTML element.
+function setVisibility(element, visibile) {
+    element.style.display = (visibile ? "inline" : "none");
+}
+
 // Determine whether an array contains an entry with the given x and y.
 function containsHex(array, x, y) {
     for (var i = 0; i < array.length; ++i) {
