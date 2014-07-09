@@ -2,11 +2,11 @@
 function showPieceInfo(piece) {
     displayedPiece = piece;
     if (piece == null) {
-        PieceInfo.hidden = true;
+        setVisibility(PieceInfo, false);
     } else {
         PieceInfoImage.src = pieceArt[piece.type + (10 * piece.color)].src;
         PieceInfoText.innerHTML = pieceText[piece.type];
-        PieceInfo.hidden = false;
+        setVisibility(PieceInfo, true);
     }
 }
 
@@ -15,17 +15,17 @@ function showTerrainInfo(hex) {
     if (hexInBounds(hex.x, hex.y)) {
         var terrain = board[hexToIndex(hex.x, hex.y)].terrain;
         if (terrain == terType.mountain) {
-            MountainInfo.hidden = false;
-            WaterInfo.hidden = true;
+            setVisibility(MountainInfo, true);
+            setVisibility(WaterInfo, false);
             return;
         } else if (terrain == terType.water) {
-            MountainInfo.hidden = true;
-            WaterInfo.hidden = false;
+            setVisibility(MountainInfo, false);
+            setVisibility(WaterInfo, true);
             return;
         }
     }
-    MountainInfo.hidden = true;
-    WaterInfo.hidden = true;
+    setVisibility(MountainInfo, false);
+    setVisibility(WaterInfo, false);
 }
 
 
@@ -40,13 +40,13 @@ SaveBoardButton.onclick = function() {
         LoadBoardSelect.innerHTML += "<option>" + name + "</option>";
         OpponentSelect.innerHTML += "<option>" + name + "</option>";
         SaveBoardName.value = "";
-        LoadBoardForm.hidden = false;
+        setVisibility(LoadBoardForm, true);
         setPhase(phase.current); // to show the forms that require a save to exist
         SaveBoardMessage.innerHTML = name + " saved.";
     } else {
         SaveBoardMessage.innerHTML = "Failed to save board.";
     }
-    SaveBoardMessage.hidden = false;
+    setVisibility(SaveBoardMessage, true);
 };
 
 LoadBoardButton.onclick = function() {
@@ -63,8 +63,8 @@ LoadBoardButton.onclick = function() {
 
 DeleteBoardButton.onclick = function() {
     DeleteBoardText.innerHTML = "Are you sure you want to delete " + LoadBoardSelect.value + "?";
-    LoadBoardForm.hidden = true;
-    DeleteBoardConfirmation.hidden = false;
+    setVisibility(LoadBoardForm, false);
+    setVisibility(DeleteBoardConfirmation, true);
 };
 
 ConfirmDeleteBoardButton.onclick = function() {
@@ -78,8 +78,8 @@ ConfirmDeleteBoardButton.onclick = function() {
 };
 
 CancelDeleteBoardButton.onclick = function() {
-    DeleteBoardConfirmation.hidden = true;
-    LoadBoardForm.hidden = false;
+    setVisibility(DeleteBoardConfirmation, false);
+    setVisibility(LoadBoardForm, true);
 }
 
 // Set up the opponent's side of the board.
@@ -297,8 +297,8 @@ MoveCodeDoneButton.onclick = function() {
 
 SaveAndExitGameButton.onclick = function() {
     SaveGameName.value = "";
-    ExitGameInterface.hidden = true;
-    SaveGameInterface.hidden = false;
+    setVisibility(ExitGameInterface, false);
+    setVisibility(SaveGameInterface, true);
 };
 
 SaveGameButton.onclick = function() {
@@ -309,7 +309,7 @@ SaveGameButton.onclick = function() {
     var savedGames = JSON.parse(localStorage.games);
     if (savedGames[name] != undefined) {
         SaveGameMessage.innerHTML = "That name is already in use.";
-        SaveGameMessage.hidden = false;
+        setVisibility(SaveGameMessage, true);
     } else {
         var gameState = getGameState();
         gameState.name = name;
@@ -321,8 +321,8 @@ SaveGameButton.onclick = function() {
 };
 
 CancelSaveGameButton.onclick = function() {
-    SaveGameInterface.hidden = true;
-    ExitGameInterface.hidden = false;
+    setVisibility(SaveGameInterface, false);
+    setVisibility(ExitGameInterface, true);
     SaveGameName.value = "";
 };
 
@@ -334,8 +334,8 @@ LoadGameButton.onclick = function() {
 
 DeleteGameButton.onclick = function() {
     DeleteGameText.innerHTML = "Are you sure you want to delete " + LoadGameSelect.value + "?";
-    LoadGameForm.hidden = true;
-    DeleteGameConfirmation.hidden = false;
+    setVisibility(LoadGameForm, false);
+    setVisibility(DeleteGameConfirmation, true);
 };
 
 ConfirmDeleteGameButton.onclick = function() {
@@ -348,16 +348,16 @@ ConfirmDeleteGameButton.onclick = function() {
 };
 
 CancelDeleteGameButton.onclick = function() {
-    DeleteGameConfirmation.hidden = true;
-    LoadGameForm.hidden = false;
+    setVisibility(DeleteGameConfirmation, false);
+    setVisibility(LoadGameForm, true);
 };
 
 ResignButton.onclick = function() {
     if (mode.current == mode.sandbox) {
         leaveGame();
     } else {
-        ExitGameInterface.hidden = true;
-        ResignConfirmation.hidden = false;
+        setVisibility(ExitGameInterface, false);
+        setVisibility(ResignConfirmation, true);
     }
 }
 
@@ -366,8 +366,8 @@ ConfirmResignButton.onclick = function() {
 };
 
 CancelResignButton.onclick = function() {
-    ResignConfirmation.hidden = true;
-    ExitGameInterface.hidden = false;
+    setVisibility(ResignConfirmation, false);
+    setVisibility(ExitGameInterface, true);
 };
 
 GameOverExitButton.onclick = function() {

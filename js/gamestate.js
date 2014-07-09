@@ -15,31 +15,31 @@ function setMode(newMode) {
 function setPhase(newPhase) {
 
     // determine visibility of HTML elements
-    SaveBoardForm.hidden = newPhase != phase.boardComplete;
-    LoadBoardForm.hidden = (newPhase >= phase.localSetup) || (localStorage.boards == "[]");
-    LoadGameForm.hidden = (newPhase >= phase.localSetup) || (localStorage.games == "[]");
-    GameModeForm.hidden = (newPhase != phase.boardComplete) || (localStorage.boards == "[]");
-    ExchangeBoardsForm.hidden = newPhase != phase.exchangeBoards;
-    ConfirmExchangeForm.hidden = newPhase != phase.confirmExchange;
-    LoadOpponentForm.hidden = newPhase != phase.localSetup;
-    TurnInterface.hidden = (newPhase < phase.playerToMove); // || (newPhase > phase.playerMoved);
-    MoveCodeInputInterface.hidden = (mode.current != mode.raven) || (newPhase != phase.awaitingOpponentMove);
-    MoveCodeOutputInterface.hidden  = (MoveCodeInputInterface.hidden || (gameHistory.length == 0)) &&
-                ((mode.current != mode.raven) || (newPhase != phase.gameOver) || (gameHistory[gameHistory.length - 1].color != playerColor));
+    setVisibility(SaveBoardForm, newPhase == phase.boardComplete);
+    setVisibility(LoadBoardForm, (newPhase < phase.localSetup) && (localStorage.boards != "[]"));
+    setVisibility(LoadGameForm, (newPhase < phase.localSetup) && (localStorage.games != "[]"));
+    setVisibility(GameModeForm, (newPhase == phase.boardComplete) && (localStorage.boards != "[]"));
+    setVisibility(ExchangeBoardsForm, newPhase == phase.exchangeBoards);
+    setVisibility(ConfirmExchangeForm, newPhase == phase.confirmExchange);
+    setVisibility(LoadOpponentForm, newPhase == phase.localSetup);
+    setVisibility(TurnInterface, (newPhase >= phase.playerToMove));
+    setVisibility(MoveCodeInputInterface, (mode.current == mode.raven) && (newPhase == phase.awaitingOpponentMove));
+    setVisibility(MoveCodeOutputInterface, ((MoveCodeInputInterface.style.display != "none") && (gameHistory.length > 0)) ||
+                ((mode.current == mode.raven) && (newPhase == phase.gameOver) && (gameHistory[gameHistory.length - 1].color == playerColor)));
     UndoButton.disabled = (gameHistory.length == 0) ||
                         ((mode.current != mode.sandbox) && (newPhase != phase.playerMoved) && (newPhase != phase.playerSecondMove));
     EndTurnButton.disabled = ((mode.current == mode.sandbox) && (undoneHistory.length == 0)) ||
                         ((mode.current != mode.sandbox) && (newPhase != phase.playerMoved) && (newPhase != phase.playerSecondMove));
     ResignButton.disabled = (mode.current == mode.raven) && (newPhase == phase.awaitingOpponentMove);
-    RavenModeFirstMessage.hidden = (mode.current != mode.raven) || (gameHistory.length > 0) || (newPhase != phase.playerToMove);
-    RavenModeSecondMessage.hidden = (mode.current != mode.raven) || (gameHistory.length > 0) || (newPhase != phase.awaitingOpponentMove);
-    ExitGameInterface.hidden = (newPhase < phase.playerToMove) || (newPhase >= phase.gameOver);
-    SaveGameInterface.hidden = true;
-    ResignConfirmation.hidden = true;
-    DeleteGameConfirmation.hidden = true;
-    DeleteBoardConfirmation.hidden = true;
-    SaveBoardMessage.hidden = true;
-    SaveGameMessage.hidden = true;
+    setVisibility(RavenModeFirstMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.playerToMove));
+    setVisibility(RavenModeSecondMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.awaitingOpponentMove));
+    setVisibility(ExitGameInterface, (newPhase >= phase.playerToMove) && (newPhase < phase.gameOver));
+    setVisibility(SaveGameInterface, false);
+    setVisibility(ResignConfirmation, false);
+    setVisibility(DeleteGameConfirmation, false);
+    setVisibility(DeleteBoardConfirmation, false);
+    setVisibility(SaveBoardMessage, false);
+    setVisibility(SaveGameMessage, false);
 
     // update help text
     if (newPhase in instructions) {
@@ -50,8 +50,8 @@ function setPhase(newPhase) {
 
     // show terrain info during tile placement
     if (newPhase == phase.placeTiles) {
-        MountainInfo.hidden = false;
-        WaterInfo.hidden = false;
+        setVisibility(MountainInfo, true);
+        setVisibility(WaterInfo, true);
     }
 
     // keep bottomTileArrangement up to date and offer pieces during board setup
@@ -91,7 +91,7 @@ function setPhase(newPhase) {
         ConfirmationCodeInput.value = "";
         ConfirmationCodeOutput.value = playerRollCode.toString(16);
         ConfirmationCodeOutput.select();
-    } else if (!(MoveCodeOutputInterface.hidden)) {
+    } else if (MoveCodeOutputInterface.style.display != "none") {
         MoveCodeOutput.value = encodeLatestMove();
         MoveCodeOutput.select();
     }
@@ -104,9 +104,9 @@ function setPhase(newPhase) {
         } else {
             GameOverText.innerHTML = "<span style=\"font-size:20px\"><b>Victory White!</b></span>";
         }
-        GameOverInterface.hidden = false;
+        setVisibility(GameOverInterface, true);
     } else {
-        GameOverInterface.hidden = true;
+        setVisibility(GameOverInterface, false);
     }
 
     // scroll history to the bottom
