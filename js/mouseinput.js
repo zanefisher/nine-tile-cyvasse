@@ -97,7 +97,7 @@ function interpretMove(piece, x, y) {
     var move = {x0: piece.x, y0: piece.y, x1: x, y1: y, capture: false, color: piece.color, type: piece.type};
     if (containsHex(captures, x, y)) {
         move.capture = true;
-        var captured = getItemAtHex(captures, x, y).captured
+        var captured = getItemAtHex(captures, x, y).captured;
         move.capType = captured.type;
         move.x2 = captured.x;
         move.y2 = captured.y;

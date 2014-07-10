@@ -677,6 +677,11 @@ function executeMove(move) {
     }
     updateLogs();
 
+    //animate
+    if (mode.current != mode.setup) {
+        animateMove(move);
+    }
+
     //determine next phase
     if (mode.current == mode.sandbox) {
         setPhase(phase.playerToMove);
@@ -822,9 +827,6 @@ function restoreGameState(gameState) {
     arrangeTiles(gameState.bottomTileArrangement);
     readTerrainFromTiles();
     arrangePieces(gameState.bottomPieceArrangement);
-
-    setMode(mode.sandbox);
-    setPhase(phase.playerToMove);
 
     // play out the game according to the history
     for (moveCount = 0; moveCount < gameState.gameHistory.length; ++moveCount) {

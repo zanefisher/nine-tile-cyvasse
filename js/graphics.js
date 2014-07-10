@@ -1,9 +1,5 @@
 // Draw the terrain squares for the terrain info fields.
 function drawTerrainThumbails() {
-    // var left = (MountainInfoCanvas.width - squareSize) / 2;
-    // var right = left + squareSize;
-    // var top = (MountainInfoCanvas.height - squareSize) / 2;
-    // var bottom = top + squareSize;
 
     var left = 2;
     var right = MountainInfoCanvas.width - left;
@@ -64,6 +60,24 @@ function animateFlip(tile) {
     var now = (new Date()).getTime();
     animatingTiles.push({id: tile.id, type: animationType.flip, startTime: now, endTime: now + 150});
 }
+
+function animateMove(move) {
+    var now = (new Date()).getTime();
+    var moveTime = 0;
+    if (phase.current == phase.awaitingOpponentMove) {
+        moveTime = (200 * hexDistance(move.x0, move.y0, move.x1, move.y1));
+        animatingPieces.push({piece: {type: move.type, color: move.color},
+                                x0: move.x0, y0: move.y0, x: move.x1, y: move.y1,
+                                startTime: now, endTime: now + moveTime});
+    }
+    if (move.capture) {
+        var delay = Math.max(0, moveTime - 200);
+        var drop = (move.color == topColor ? 6 : -6);
+        animatingPieces.push({piece: {type: move.capType, color: !(move.color)},
+                                x0: move.x2, y0: move.y2, x: move.x2 - drop, y: move.y2 + drop,
+                                startTime: now + delay, endTime: now + delay + 1000});
+    }
+};
 
 
 // Drawing
@@ -387,17 +401,7 @@ function drawTiles() {
     }
 }
 
-function drawPiece(piece) {
-    var x = 0;
-    var y = 0;
-    if (piece == movingPiece) {
-        x = movingPieceX;
-        y = movingPieceY;
-    } else {
-        var pos = hexPos(piece.x, piece.y);
-        x = pos.x + squareSize/2;
-        y = pos.y + squareSize/2;
-    }
+function drawPieceAt(piece, x, y) {
     var radius = (2/5) * squareSize;
     var artIndex = piece.type + (piece.color * 10);
     if (squareSize == 50) {
@@ -405,13 +409,46 @@ function drawPiece(piece) {
     } else {
         ctx.drawImage(pieceArt[artIndex], x - radius, y - radius, 2 * radius, 2 * radius);
     }
-    if ((mode.current != mode.setup) && (mode.current != mode.sandbox) && (containsHex(kingThreats, piece.x, piece.y))) {
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "#FF0000";
-        ctx.moveTo(x + radius, y);
-        ctx.arc(x, y, radius, 0, 2*Math.PI);
-        ctx.stroke();
+}
+
+function drawPiece(piece) {
+    if (piece == movingPiece) {
+        drawPieceAt(piece, movingPieceX, movingPieceY);
+    } else if (!containsHex(animatingPieces, piece.x, piece.y)) {
+        var pos = hexPos(piece.x, piece.y);
+        drawPieceAt(piece, pos.x + squareSize/2, pos.y + squareSize/2);
+    }
+}
+
+function drawAnimatingPieces() {
+    for (var i = 0; i < animatingPieces.length; ++i) {
+        var completion = animationCompletion(animatingPieces[i]);
+        var origin = hexPos(animatingPieces[i].x0, animatingPieces[i].y0);
+        var x = origin.x + squareSize/2;
+        var y = origin.y + squareSize/2;
+        if (completion > 0) {
+            var target = hexPos(animatingPieces[i].x, animatingPieces[i].y);
+            x += completion * (target.x - origin.x);
+            y += completion * (target.y - origin.y);
+        }
+        drawPieceAt(animatingPieces[i].piece, x, y);
+    }
+}
+
+function indicateThreats() {
+    if ((mode.current != mode.setup) && (mode.current != mode.sandbox) && (animatingPieces.length == 0)) {
+        for (var i = 0; i < kingThreats.length; ++i) {
+            var pos = hexPos(kingThreats[i].x, kingThreats[i].y);
+            pos.x += squareSize/2;
+            pos.y += squareSize/2;
+            var radius = (2/5) * squareSize;
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#FF0000";
+            ctx.moveTo(pos.x + radius, pos.y);
+            ctx.arc(pos.x, pos.y, radius, 0, 2*Math.PI);
+            ctx.stroke();
+        }
     }
 }
 
@@ -658,6 +695,8 @@ function draw() {
         for (var i = 0; i < playerPieces.length; ++i) {
             drawPiece(playerPieces[i]);
         }
+        drawAnimatingPieces();
+        indicateThreats();
         drawMoves();
         if (mouseDown) {
             if (movingPiece != null) {
