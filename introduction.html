@@ -1415,15 +1415,22 @@ canvas.onmousedown = function() {
 
 // Interface
 
+var resetCount = 0;
+
 previousButton.onclick = function() {
+	resetCount = 0;
 	setPhase(phase - 1);
 }
 
 resetButton.onclick = function() {
+	if (++resetCount >= 2) {
+		HintText.style.display = "inline";
+	}
 	setPhase(phase);
 }
 
 nextButton.onclick = function() {
+	resetCount = 0;
 	setPhase(phase + 1);
 }
 
