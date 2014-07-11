@@ -14,7 +14,13 @@ function setMode(newMode) {
 // transisions.
 function setPhase(newPhase) {
 
+    // remove new player status upon starting a game
+    if (localStorage.newPlayer && (newPhase >= phase.playerToMove)) {
+        localStorage.newPlayer = false;
+    }
+
     // determine visibility of HTML elements
+    setVisibility(NewPlayerMessage, localStorage.newPlayer == "true");
     setVisibility(SaveBoardForm, newPhase == phase.boardComplete);
     setVisibility(LoadBoardForm, (newPhase < phase.localSetup) && (localStorage.boards != "[]"));
     setVisibility(LoadGameForm, (newPhase < phase.localSetup) && (localStorage.games != "[]"));

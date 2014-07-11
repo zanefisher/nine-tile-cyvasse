@@ -328,7 +328,7 @@ function setPhase(newPhase) {
 		createPiece(pieceType.spears, 7, 8, playerColor);
 		break;
 	case 8:
-		helpText.innerHTML = "The object of the game is to capture your opponent's King.<br><br>Capture black's King in 7 moves. When you're finished, you can play <a href=\"file:///Users/zanefisher/Desktop/Cyvasse/cyvasse.html\">here</a>.";
+		helpText.innerHTML = "The object of the game is to capture your opponent's King.<br><br>Capture black's King in 7 moves. When you're finished, you can play <a href=\"game.html\">here</a>.";
 		HintText.innerHTML = "(HINT: you've seen Towers before, but this time it's important to note that they prevent adjacent enemy pieces from engaging other. You may need to capture one of the Towers before going after the King.)";
 		moveLimit = 7;
 		createPiece(pieceType.heavyHorse, 4, 2, playerColor);
@@ -347,6 +347,7 @@ function setPhase(newPhase) {
 		createPiece(pieceType.king, 4, 7, !playerColor);
 		board[hexToIndex(3, 7)].terrain = terType.mountain;
 		board[hexToIndex(4, 8)].terrain = terType.mountain;
+        localStorage.newPlayer = false;
 		break;
 	}
 	phase = newPhase;

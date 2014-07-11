@@ -45,26 +45,34 @@
 		</td>
 		<td style="width:300px;">
 			<div id="ScrollDiv" style="height:510px; overflow:auto">
+				<p id="NewPlayerMessage" style="display:none">
+					<b>New to the Game?</b>
+					<br>
+					<br>
+					If you don't know how to play yet, you should start with the <a href="introduction.html">introduction</a>.
+					<br>
+					<br>
+				</p>
 				<div id="SaveBoardForm" style="display:none">
 					<p><b>Save This Board</b></p>
 					<input id="SaveBoardName" type="text" />
 					<button id="SaveBoardButton" type="button">Save</button>
 					<p id ="SaveBoardMessage" style="display:none"></p>
-					<div style="height:28px"></div>
+					<div style="height:2em"></div>
 				</div>
 				<div id="LoadBoardForm" style="display:none">
 					<p><b>Load a Board</b></p>
 					<select id="LoadBoardSelect"></select>
 					<button id="LoadBoardButton" type="button">Load</button>
 					<button id="DeleteBoardButton" type="button">Delete</button>
-					<div style="height:28px"></div>
+					<div style="height:2em"></div>
 				</div>
 				<div id="DeleteBoardConfirmation" style="display:none">
 					<p><b>Load a Board</b></p>
 					<p id="DeleteBoardText"></p>
 					<button id="ConfirmDeleteBoardButton">Delete</button>
 					<button id="CancelDeleteBoardButton">Cancel</button>
-					<div style="height:28px"></div>
+					<div style="height:2em"></div>
 				</div>
 				<p id="ModeDescriptionText"></p>
 				<div id="LoadOpponentForm" style="display:none">
@@ -74,7 +82,7 @@
 					<br>
 					<br>
 					<button id="LoadOpponentBackButton" type="button">Back</button>
-					<div style="height:28px"></div>
+					<div style="height:2em"></div>
 				</div>
 				<div id="ExchangeBoardsForm" style="display:none">
 					<p><b>Exchange Boards</b></p>
@@ -104,21 +112,21 @@
 					<select id="LoadGameSelect"></select>
 					<button id="LoadGameButton" type="button">Load</button>
 					<button id="DeleteGameButton" type="button">Delete</button>
-					<div style="height:28px"></div>
+					<div style="height:2em"></div>
 				</div>
 				<div id="DeleteGameConfirmation" style="display:none">
 					<p><b>Load a Game</b></p>
 					<p id="DeleteGameText"></p>
 					<button id="ConfirmDeleteGameButton" type="button">Delete</button>
 					<button id="CancelDeleteGameButton" type="button">Cancel</button>
-					<div style="height:28px"></div>
+					<div style="height:2em"></div>
 				</div>
 				<div id="GameModeForm" style="display:none">
 					<p><b>Choose a Game Mode</b></p>
 					<button id="RavenButton" type="button">Play by Raven</button>
 					<button id="HotseatButton" type="button">Hotseat</button>
 					<button id="SandboxButton" type="button">Sandbox</button>
-					<div style="height:28px"></div>
+					<div style="height:2em"></div>
 				</div>
 				<p id="RavenModeFirstMessage" style="display:none">You have the first move.</p>
 				<p id="RavenModeSecondMessage" style="display:none">Your opponent has the first move.</p>
