@@ -119,6 +119,7 @@ function setPhase(newPhase) {
     ScrollDiv.scrollTop = ScrollDiv.scrollHeight;
 
     phase.current = newPhase;
+    draw();
 }
 
 
@@ -688,9 +689,13 @@ function executeMove(move) {
         animateMove(move);
     }
 
+    updateKingThreats();
+
     //determine next phase
     if (mode.current == mode.sandbox) {
         setPhase(phase.playerToMove);
+    } else if ((phase.current == phase.awaitingOpponentMove) && move.capture && (move.capType == pieceType.king)) {
+        setPhase(phase.gameOver);
     } else if ((mode.current == mode.raven) && (move.color != playerColor)) {
         setPhase(phase.playerToMove);
     } else if (mode.current != mode.setup) {
@@ -704,8 +709,42 @@ function executeMove(move) {
             setPhase(phase.playerMoved);
         }
     }
+}
+
+// Reverse the execution of the last move in gameHistory.
+function undoLastMove() {
+    var move = gameHistory.pop();
+    var pieces = (playerColor == move.color ? playerPieces : opponentPieces);
+    var piece = getItemAtHex(pieces, move.x1, move.y1);
+
+    // revert move
+    piece.x = move.x0;
+    piece.y = move.y0;
+    board[hexToIndex(move.x0, move.y0)].piece = piece;
+    board[hexToIndex(move.x1, move.y1)].piece = null;
+    if (move.capture) {
+        var enemyPieces = (playerColor == move.color ? opponentPieces : playerPieces);
+        var capturedPiece = {type: move.capType, x: move.x2 , y: move.y2, color: !(move.color)};
+        enemyPieces.push(capturedPiece);
+        board[hexToIndex(move.x2, move.y2)].piece = capturedPiece;
+    }
 
     updateKingThreats();
+
+    // determine phase and update history
+    if (mode.current == mode.sandbox) {
+        undoneHistory.splice(0, 0, move);
+        setPhase(phase.playerToMove);
+    } else if ((mode.current == mode.raven) && (move.color != playerColor)) {
+        setPhase(phase.awaitingOpponentMove);
+    } else {
+        if ((gameHistory.length > 0) && (move.color == gameHistory[gameHistory.length - 1].color)) {
+            setPhase(phase.playerSecondMove);
+        } else {
+            setPhase(phase.playerToMove);
+        }
+    }
+    updateLogs();
 }
 
 // Reverse the coordinates of every move in gameHistory and undoneHistory.
@@ -853,5 +892,4 @@ function leaveGame() {
     wipeBoard();
     setUpTiles();
     setPhase(phase.placeKingsTile);
-    draw();
 }

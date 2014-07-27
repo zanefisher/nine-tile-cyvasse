@@ -40,6 +40,7 @@ var kingThreats = []; // all pieces that can capture the player's king
 var animationType = {translation: 0, rotation: 1, flipLeft: 2, flipRight: 3};
 var animatingTiles = [];
 var animatingPieces = [];
+var screenAnimation = null;
 
 
 // Rules Variables
