@@ -97,7 +97,7 @@ function interpretMove(piece, x, y) {
     var move = {x0: piece.x, y0: piece.y, x1: x, y1: y, capture: false, color: piece.color, type: piece.type};
     if (containsHex(captures, x, y)) {
         move.capture = true;
-        var captured = getItemAtHex(captures, x, y).captured
+        var captured = getItemAtHex(captures, x, y).captured;
         move.capType = captured.type;
         move.x2 = captured.x;
         move.y2 = captured.y;
@@ -122,6 +122,11 @@ Board.onmouseup = function() {
             placePiece(movingPiece, hex.x, hex.y);
         }
         movingPiece = null;
+        if (pieceUnderMouse() != null) {
+            Board.style.cursor = "pointer";
+        } else {
+            Board.style.cursor = "default";
+        }
 
     // dropping a tile
     } else if (movingTile != null) {
@@ -136,6 +141,7 @@ Board.onmouseup = function() {
             matchSlot(movingTile);
         }
         movingTile = null;
+        Board.style.cursor = "pointer";
     }
     
     showMoves = [];
@@ -165,6 +171,7 @@ Board.onmousedown = function(event) {
             grabX = x - movingPieceX;
             grabY = y - movingPieceY;
             moveToBack(piece, (playerOwns(piece) ? playerPieces : opponentPieces));
+            Board.style.cursor = "none";
         }
         if (phase.current >= phase.playerToMove) { 
             showMoves = getMoves(piece);
@@ -176,6 +183,7 @@ Board.onmousedown = function(event) {
         grabY = y - tile.y;
         moveToBack(tile, tiles);
         moved = false;
+        Board.style.cursor = "none";
     }
     draw();
 };

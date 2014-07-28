@@ -6,29 +6,29 @@
 </head>
 <body>
 
-<img hidden id="BRabble" src="art/brabble.png">
-<img hidden id="BSpears" src="art/bspears_reverse.png">
-<img hidden id="BLightHorse" src="art/blighthorse.png">
-<img hidden id="BHeavyHorse" src="art/bheavyhorse.png">
-<img hidden id="BElephant" src="art/belephant.png">
-<img hidden id="BCrossbows" src="art/bcrossbows.png">
-<img hidden id="BTrebuchet" src="art/btrebuchet.png">
-<img hidden id="BDragon" src="art/bdragon.png">
-<img hidden id="BTower" src="art/btower.png">
-<img hidden id="BKing" src="art/bking.png">
+<img id="BRabble" style="display:none" src="art/brabble.png">
+<img id="BSpears" style="display:none" src="art/bspears_reverse.png">
+<img id="BLightHorse" style="display:none" src="art/blighthorse.png">
+<img id="BHeavyHorse" style="display:none" src="art/bheavyhorse.png">
+<img id="BElephant" style="display:none" src="art/belephant.png">
+<img id="BCrossbows" style="display:none" src="art/bcrossbows.png">
+<img id="BTrebuchet" style="display:none" src="art/btrebuchet.png">
+<img id="BDragon" style="display:none" src="art/bdragon.png">
+<img id="BTower" style="display:none" src="art/btower.png">
+<img id="BKing" style="display:none" src="art/bking.png">
 
-<img hidden id="WRabble" src="art/wrabble.png">
-<img hidden id="WSpears" src="art/wspears.png">
-<img hidden id="WLightHorse" src="art/wlighthorse.png">
-<img hidden id="WHeavyHorse" src="art/wheavyhorse.png">
-<img hidden id="WElephant" src="art/welephant.png">
-<img hidden id="WCrossbows" src="art/wcrossbows.png">
-<img hidden id="WTrebuchet" src="art/wtrebuchet.png">
-<img hidden id="WDragon" src="art/wdragon.png">
-<img hidden id="WTower" src="art/wtower.png">
-<img hidden id="WKing" src="art/wking.png">
+<img id="WRabble" style="display:none" src="art/wrabble.png">
+<img id="WSpears" style="display:none" src="art/wspears.png">
+<img id="WLightHorse" style="display:none" src="art/wlighthorse.png">
+<img id="WHeavyHorse" style="display:none" src="art/wheavyhorse.png">
+<img id="WElephant" style="display:none" src="art/welephant.png">
+<img id="WCrossbows" style="display:none" src="art/wcrossbows.png">
+<img id="WTrebuchet" style="display:none" src="art/wtrebuchet.png">
+<img id="WDragon" style="display:none" src="art/wdragon.png">
+<img id="WTower" style="display:none" src="art/wtower.png">
+<img id="WKing" style="display:none" src="art/wking.png">
 
-<div style="height:15px; width:990px; margin:auto; font-family:sans-serif; font-size:12px;">
+<div style="height:15px; width:990px; margin:auto; font-family:sans-serif; font-size:14px;">
 	<ul style="padding-left:0px; display:inline">
 		<li style="display:inline; padding:0.5em"><b>Nine-Tile Cyvasse</b></li>
 		<li style="display:inline; padding:0.5em"><a href="game.html">Play</a></li>
@@ -54,7 +54,7 @@
 				</tr>
 				<tr>
 					<p id="MoveCounter" style="font-size:18px"></p>
-					<p hidden id="HintText"></p>
+					<p id="HintText" style="display:none"></p>
 				</tr>
 			</table>
 		</td>
@@ -177,11 +177,11 @@ var displayedPiece = null;
 function showPieceInfo(piece) {
 	displayedPiece = piece;
 	if (piece == null) {
-		pieceInfo.hidden = true;
+		pieceInfo.style.display = "none";
 	} else {
 		pieceInfoImage.src = pieceArt[piece.type + (10 * piece.color)].src;
 		pieceInfoText.innerHTML = (phase >= 4 ? pieceText[piece.type] : rangelessPieceText[piece.type]);
-		pieceInfo.hidden = false;
+		pieceInfo.style.display = "inline";
 	}
 }
 
@@ -230,7 +230,7 @@ function setPhase(newPhase) {
 	moveLimit = 0;
 
 	if (newPhase != phase) {
-		HintText.hidden = true;
+		HintText.style.display = "none";
 		HintText.innerHTML = "";
 	}
 
@@ -328,7 +328,7 @@ function setPhase(newPhase) {
 		createPiece(pieceType.spears, 7, 8, playerColor);
 		break;
 	case 8:
-		helpText.innerHTML = "The object of the game is to capture your opponent's King.<br><br>Capture black's King in 7 moves. When you're finished, you can play <a href=\"file:///Users/zanefisher/Desktop/Cyvasse/cyvasse.html\">here</a>.";
+		helpText.innerHTML = "The object of the game is to capture your opponent's King.<br><br>Capture black's King in 7 moves. When you're finished, you can play <a href=\"game.html\">here</a>.";
 		HintText.innerHTML = "(HINT: you've seen Towers before, but this time it's important to note that they prevent adjacent enemy pieces from engaging other. You may need to capture one of the Towers before going after the King.)";
 		moveLimit = 7;
 		createPiece(pieceType.heavyHorse, 4, 2, playerColor);
@@ -347,6 +347,7 @@ function setPhase(newPhase) {
 		createPiece(pieceType.king, 4, 7, !playerColor);
 		board[hexToIndex(3, 7)].terrain = terType.mountain;
 		board[hexToIndex(4, 8)].terrain = terType.mountain;
+        localStorage.newPlayer = false;
 		break;
 	}
 	phase = newPhase;
@@ -1237,7 +1238,7 @@ function updateMoveCounter() {
 				MoveCounter.innerHTML = "Success!";
 			} else {
 				MoveCounter.innerHTML = "<span style=\"color:red\"<b>" + (moveLimit - moveCount) + " moves left. Reset to try again.</b></span>"
-				HintText.hidden = false;
+				HintText.style.display = "inline";
 			}
 		}
 	} else {
@@ -1415,15 +1416,22 @@ canvas.onmousedown = function() {
 
 // Interface
 
+var resetCount = 0;
+
 previousButton.onclick = function() {
+	resetCount = 0;
 	setPhase(phase - 1);
 }
 
 resetButton.onclick = function() {
+	if (++resetCount >= 2) {
+		HintText.style.display = "inline";
+	}
 	setPhase(phase);
 }
 
 nextButton.onclick = function() {
+	resetCount = 0;
 	setPhase(phase + 1);
 }
 

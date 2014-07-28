@@ -1,4 +1,4 @@
-// Initialize local storage, save/load interface.
+// Initialize local storage, save/load interface, new player message.
 
 if (localStorage.games == undefined) {
     localStorage.games = "[]";
@@ -21,6 +21,10 @@ if (localStorage.boards == undefined) {
             OpponentSelect.innerHTML += "<option>" + boards[i].name + "</option>";
         }
     }
+}
+
+if (localStorage.newPlayer == undefined) {
+    localStorage.newPlayer = true;
 }
 
 

@@ -2,11 +2,11 @@
 function showPieceInfo(piece) {
     displayedPiece = piece;
     if (piece == null) {
-        PieceInfo.hidden = true;
+        setVisibility(PieceInfo, false);
     } else {
         PieceInfoImage.src = pieceArt[piece.type + (10 * piece.color)].src;
         PieceInfoText.innerHTML = pieceText[piece.type];
-        PieceInfo.hidden = false;
+        setVisibility(PieceInfo, true);
     }
 }
 
@@ -15,17 +15,17 @@ function showTerrainInfo(hex) {
     if (hexInBounds(hex.x, hex.y)) {
         var terrain = board[hexToIndex(hex.x, hex.y)].terrain;
         if (terrain == terType.mountain) {
-            MountainInfo.hidden = false;
-            WaterInfo.hidden = true;
+            setVisibility(MountainInfo, true);
+            setVisibility(WaterInfo, false);
             return;
         } else if (terrain == terType.water) {
-            MountainInfo.hidden = true;
-            WaterInfo.hidden = false;
+            setVisibility(MountainInfo, false);
+            setVisibility(WaterInfo, true);
             return;
         }
     }
-    MountainInfo.hidden = true;
-    WaterInfo.hidden = true;
+    setVisibility(MountainInfo, false);
+    setVisibility(WaterInfo, false);
 }
 
 
@@ -40,13 +40,13 @@ SaveBoardButton.onclick = function() {
         LoadBoardSelect.innerHTML += "<option>" + name + "</option>";
         OpponentSelect.innerHTML += "<option>" + name + "</option>";
         SaveBoardName.value = "";
-        LoadBoardForm.hidden = false;
+        setVisibility(LoadBoardForm, true);
         setPhase(phase.current); // to show the forms that require a save to exist
         SaveBoardMessage.innerHTML = name + " saved.";
     } else {
         SaveBoardMessage.innerHTML = "Failed to save board.";
     }
-    SaveBoardMessage.hidden = false;
+    setVisibility(SaveBoardMessage, true);
 };
 
 LoadBoardButton.onclick = function() {
@@ -63,8 +63,8 @@ LoadBoardButton.onclick = function() {
 
 DeleteBoardButton.onclick = function() {
     DeleteBoardText.innerHTML = "Are you sure you want to delete " + LoadBoardSelect.value + "?";
-    LoadBoardForm.hidden = true;
-    DeleteBoardConfirmation.hidden = false;
+    setVisibility(LoadBoardForm, false);
+    setVisibility(DeleteBoardConfirmation, true);
 };
 
 ConfirmDeleteBoardButton.onclick = function() {
@@ -78,8 +78,8 @@ ConfirmDeleteBoardButton.onclick = function() {
 };
 
 CancelDeleteBoardButton.onclick = function() {
-    DeleteBoardConfirmation.hidden = true;
-    LoadBoardForm.hidden = false;
+    setVisibility(DeleteBoardConfirmation, false);
+    setVisibility(LoadBoardForm, true);
 }
 
 // Set up the opponent's side of the board.
@@ -96,8 +96,8 @@ LoadOpponentButton.onclick = function() {
     var index = OpponentSelect.selectedIndex;
     var board = (JSON.parse(localStorage.boards))[index];
     arrangeOpponent(board.tiles, board.pieces);
+    animateScreen();
     setPhase(phase.playerToMove);
-    draw();
 };
 
 ConfirmExchangeDoneButton.onclick = function() {
@@ -110,9 +110,9 @@ ConfirmExchangeDoneButton.onclick = function() {
     } else {
         setPlayerColor(true);
         topColor = false;
-        arrangeOpponent(opponentBoard.tileArrangement, opponentBoard.pieceArrangement);
         setPhase(phase.awaitingOpponentMove);
     }
+    animateScreen();
     arrangeOpponent(opponentBoard.tileArrangement, opponentBoard.pieceArrangement);
     draw();
 };
@@ -212,7 +212,6 @@ EndTurnButton.onclick = function() {
     switch(mode.current) {
     case mode.hotseat:
         if ((gameHistory[gameHistory.length - 1].capture) && (gameHistory[gameHistory.length - 1].capType == pieceType.king)) {
-            updateLogs();
             setPhase(phase.gameOver);
         } else {
             reverseBoard();
@@ -225,50 +224,22 @@ EndTurnButton.onclick = function() {
     case mode.sandbox:
         executeMove(undoneHistory[0]);
         updateLogs();
-        if ((gameHistory[gameHistory.length - 1].capture) && (gameHistory[gameHistory.length - 1].capType == pieceType.king)) {
-            setPhase(phase.gameOver);
-        } else {
-            setPhase(phase.playerToMove);
-        }
-        draw();
+        setPhase(phase.playerToMove);
         break;
     case mode.raven:
         updateLogs();
-        setPhase(phase.awaitingOpponentMove);
+        if ((gameHistory[gameHistory.length - 1].capture) && (gameHistory[gameHistory.length - 1].capType == pieceType.king)) {
+            setPhase(phase.gameOver);
+        } else {
+            setPhase(phase.awaitingOpponentMove);
+        }
         draw();
         break;
     }
 };
 
 UndoButton.onclick = function() {
-    var move = gameHistory.pop();
-    //if (gameHistory.length == 0) { UndoButton.disabled = true; }
-    var pieces = (playerColor == move.color ? playerPieces : opponentPieces);
-    var piece = getItemAtHex(pieces, move.x1, move.y1);
-    piece.x = move.x0;
-    piece.y = move.y0;
-    board[hexToIndex(move.x0, move.y0)].piece = piece;
-    board[hexToIndex(move.x1, move.y1)].piece = null;
-    if (move.capture) {
-        var enemyPieces = (playerColor == move.color ? opponentPieces : playerPieces);
-        var capturedPiece = {type: move.capType, x: move.x2 , y: move.y2, color: !(move.color)};
-        enemyPieces.push(capturedPiece);
-        board[hexToIndex(move.x2, move.y2)].piece = capturedPiece;
-    }
-    if (mode.current == mode.sandbox) {
-        undoneHistory.splice(0, 0, move);
-        //EndTurnButton.disabled = false;
-        setPhase(phase.playerToMove);
-    } else {
-        if ((gameHistory.length > 0) && (move.color == gameHistory[gameHistory.length - 1].color)) {
-            setPhase(phase.playerSecondMove);
-        } else {
-            setPhase(phase.playerToMove);
-        }
-    }
-    updateLogs();
-    updateKingThreats();
-    draw();
+    undoLastMove();
 };
 
 MoveCodeDoneButton.onclick = function() {
@@ -282,14 +253,16 @@ MoveCodeDoneButton.onclick = function() {
     } else if (moveCode.length == 8) {
         var moves = decodeDoubleMove(moveCode, encodeTurn(gameHistory.length + 2), opponentRollCode);
         var move1 = reconstructDecodedMove(moves.move1);
-        var move2 = reconstructDecodedMove(moves.move2);
-        if ((move1 != null) && (move2 != null)) {
+        if (move1 != null) {
             executeMove(move1);
-            executeMove(move2);
+            var move2 = reconstructDecodedMove(moves.move2);
+            if (move2 == null) {
+                undoLastMove();
+            } else {
+                executeMove(move2);
+            }
         }
     }
-    updateLogs();
-    draw();
 };
 
 
@@ -297,8 +270,8 @@ MoveCodeDoneButton.onclick = function() {
 
 SaveAndExitGameButton.onclick = function() {
     SaveGameName.value = "";
-    ExitGameInterface.hidden = true;
-    SaveGameInterface.hidden = false;
+    setVisibility(ExitGameInterface, false);
+    setVisibility(SaveGameInterface, true);
 };
 
 SaveGameButton.onclick = function() {
@@ -309,7 +282,7 @@ SaveGameButton.onclick = function() {
     var savedGames = JSON.parse(localStorage.games);
     if (savedGames[name] != undefined) {
         SaveGameMessage.innerHTML = "That name is already in use.";
-        SaveGameMessage.hidden = false;
+        setVisibility(SaveGameMessage, true);
     } else {
         var gameState = getGameState();
         gameState.name = name;
@@ -321,21 +294,20 @@ SaveGameButton.onclick = function() {
 };
 
 CancelSaveGameButton.onclick = function() {
-    SaveGameInterface.hidden = true;
-    ExitGameInterface.hidden = false;
+    setVisibility(SaveGameInterface, false);
+    setVisibility(ExitGameInterface, true);
     SaveGameName.value = "";
 };
 
 LoadGameButton.onclick = function() {
     var savedGame = JSON.parse(localStorage.games)[LoadGameSelect.selectedIndex];
     restoreGameState(savedGame);
-    draw();
 };
 
 DeleteGameButton.onclick = function() {
     DeleteGameText.innerHTML = "Are you sure you want to delete " + LoadGameSelect.value + "?";
-    LoadGameForm.hidden = true;
-    DeleteGameConfirmation.hidden = false;
+    setVisibility(LoadGameForm, false);
+    setVisibility(DeleteGameConfirmation, true);
 };
 
 ConfirmDeleteGameButton.onclick = function() {
@@ -348,16 +320,16 @@ ConfirmDeleteGameButton.onclick = function() {
 };
 
 CancelDeleteGameButton.onclick = function() {
-    DeleteGameConfirmation.hidden = true;
-    LoadGameForm.hidden = false;
+    setVisibility(DeleteGameConfirmation, false);
+    setVisibility(LoadGameForm, true);
 };
 
 ResignButton.onclick = function() {
     if (mode.current == mode.sandbox) {
         leaveGame();
     } else {
-        ExitGameInterface.hidden = true;
-        ResignConfirmation.hidden = false;
+        setVisibility(ExitGameInterface, false);
+        setVisibility(ResignConfirmation, true);
     }
 }
 
@@ -366,8 +338,8 @@ ConfirmResignButton.onclick = function() {
 };
 
 CancelResignButton.onclick = function() {
-    ResignConfirmation.hidden = true;
-    ExitGameInterface.hidden = false;
+    setVisibility(ResignConfirmation, false);
+    setVisibility(ExitGameInterface, true);
 };
 
 GameOverExitButton.onclick = function() {

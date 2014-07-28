@@ -1,9 +1,5 @@
 // Draw the terrain squares for the terrain info fields.
 function drawTerrainThumbails() {
-    // var left = (MountainInfoCanvas.width - squareSize) / 2;
-    // var right = left + squareSize;
-    // var top = (MountainInfoCanvas.height - squareSize) / 2;
-    // var bottom = top + squareSize;
 
     var left = 2;
     var right = MountainInfoCanvas.width - left;
@@ -63,6 +59,53 @@ function animateRotation(tile) {
 function animateFlip(tile) {
     var now = (new Date()).getTime();
     animatingTiles.push({id: tile.id, type: animationType.flip, startTime: now, endTime: now + 150});
+}
+
+function animateMove(move) {
+    var now = (new Date()).getTime();
+    var moveTime = 0;
+    if ((mode.current != mode.sandbox) && (move.color != playerColor)) {
+        moveTime = (200 * hexDistance(move.x0, move.y0, move.x1, move.y1));
+        animatingPieces.unshift({piece: {type: move.type, color: move.color},
+                                x0: move.x0, y0: move.y0, x: move.x1, y: move.y1,
+                                startTime: now, endTime: now + moveTime});
+    }
+    if (move.capture) {
+        var delay = Math.max(0, moveTime - 200);
+        var drop = (move.color == topColor ? 6 : -6);
+        animatingPieces.unshift({piece: {type: move.capType, color: !(move.color)},
+                                x0: move.x2, y0: move.y2, x: move.x2 - drop, y: move.y2 + drop,
+                                startTime: now + delay, endTime: now + delay + 1000});
+    }
+}
+
+function animateScreen() {
+    var now = (new Date()).getTime();
+    screenAnimation = {startTime: now, endTime: now + 2000};
+}
+
+function updateAnimations() {
+    for (var i = 0; i < animatingTiles.length; ++i) {
+        if (animatingTiles[i].endTime <= drawTime) {
+            animatingTiles.splice(i--, 1);
+        }
+    }
+    for (var i = 0; i < animatingPieces.length; ++i) {
+        if (animatingPieces[i].endTime <= drawTime) {
+            animatingPieces.splice(i--, 1);
+        }
+    }
+    for (var i = 0; i < tiles.length; ++i) {
+        var tile = tiles[i];
+        var side = ((tile.x + (1.25 * squareSize)) < (kingsTile.x + (1.5 * squareSize)));
+        if (tile.side != side) {
+            animateFlip(tile);
+            tile.side = side;
+        }
+    }
+    if ((screenAnimation != null) && (screenAnimation.endTime <= drawTime)) {
+        screenAnimation = null;
+    }
 }
 
 
@@ -158,12 +201,13 @@ function drawDividerScreen() {
     ctx.beginPath();
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#000000";
-    var midline = topMargin + (4.5 * squareSize);
-    ctx.clearRect(leftMargin, topMargin, squareSize * 12, midline - topMargin);
-    ctx.rect(leftMargin, topMargin, squareSize * 12, midline - topMargin);
-    for (var n = 0; n < 12; ++n) {
-        ctx.rect(leftMargin + (n * squareSize), midline, squareSize, squareSize/2);
+    ctx.fillStyle = "#FFFFFF";
+    var liftHeight =  0;
+    if (screenAnimation != null) {
+        liftHeight = animationCompletion(screenAnimation) * ((4.5 * squareSize) + topMargin);
     }
+    ctx.rect(leftMargin, topMargin - liftHeight, squareSize * 12, squareSize * 4.5);
+    ctx.fill();
     ctx.stroke();
 }
 
@@ -180,6 +224,15 @@ function drawBaseBoard() {
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#000000";
     traceUnbuiltBoardBottom();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.fillStyle = "#FFFFFF";
+    var midline = topMargin + (4.5 * squareSize);
+    for (var n = 0; n < 12; ++n) {
+        ctx.rect(leftMargin + (n * squareSize), midline, squareSize, squareSize/2);
+    }
+    ctx.fill();
     ctx.stroke();
 }
 
@@ -387,17 +440,7 @@ function drawTiles() {
     }
 }
 
-function drawPiece(piece) {
-    var x = 0;
-    var y = 0;
-    if (piece == movingPiece) {
-        x = movingPieceX;
-        y = movingPieceY;
-    } else {
-        var pos = hexPos(piece.x, piece.y);
-        x = pos.x + squareSize/2;
-        y = pos.y + squareSize/2;
-    }
+function drawPieceAt(piece, x, y, redCircle) {
     var radius = (2/5) * squareSize;
     var artIndex = piece.type + (piece.color * 10);
     if (squareSize == 50) {
@@ -405,13 +448,38 @@ function drawPiece(piece) {
     } else {
         ctx.drawImage(pieceArt[artIndex], x - radius, y - radius, 2 * radius, 2 * radius);
     }
-    if ((mode.current != mode.setup) && (mode.current != mode.sandbox) && (containsHex(kingThreats, piece.x, piece.y))) {
+    if (redCircle) {
         ctx.beginPath();
         ctx.lineWidth = 2;
         ctx.strokeStyle = "#FF0000";
         ctx.moveTo(x + radius, y);
         ctx.arc(x, y, radius, 0, 2*Math.PI);
         ctx.stroke();
+    }
+}
+
+function drawPiece(piece) {
+    if (piece == movingPiece) {
+        drawPieceAt(piece, movingPieceX, movingPieceY, false);
+    } else if (!containsHex(animatingPieces, piece.x, piece.y)) {
+        var pos = hexPos(piece.x, piece.y);
+        var redCircle = (mode.current != mode.sandbox) && containsHex(kingThreats, piece.x, piece.y)
+        drawPieceAt(piece, pos.x + squareSize/2, pos.y + squareSize/2, redCircle);
+    }
+}
+
+function drawAnimatingPieces() {
+    for (var i = 0; i < animatingPieces.length; ++i) {
+        var completion = animationCompletion(animatingPieces[i]);
+        var origin = hexPos(animatingPieces[i].x0, animatingPieces[i].y0);
+        var x = origin.x + squareSize/2;
+        var y = origin.y + squareSize/2;
+        if (completion > 0) {
+            var target = hexPos(animatingPieces[i].x, animatingPieces[i].y);
+            x += completion * (target.x - origin.x);
+            y += completion * (target.y - origin.y);
+        }
+        drawPieceAt(animatingPieces[i].piece, x, y, false);
     }
 }
 
@@ -599,24 +667,7 @@ function drawMoves() {
 
 function draw() {
     drawTime = (new Date()).getTime();
-    for (var i = 0; i < animatingTiles.length; ++i) {
-        if (animatingTiles[i].endTime <= drawTime) {
-            animatingTiles.splice(i, 1);
-        }
-    }
-    for (var i = 0; i < animatingPieces.length; ++i) {
-        if (animatingPieces[i].endTime <= drawTime) {
-            animatingPieces.splice(i, 1);
-        }
-    }
-    for (var i = 0; i < tiles.length; ++i) {
-        var tile = tiles[i];
-        var side = ((tile.x + (1.25 * squareSize)) < (kingsTile.x + (1.5 * squareSize)));
-        if (tile.side != side) {
-            animateFlip(tile);
-            tile.side = side;
-        }
-    }
+    updateAnimations();
     ctx.clearRect(0, 0, Board.width, Board.height);
     switch (phase.current) {
     case phase.loading:
@@ -651,27 +702,33 @@ function draw() {
         break;
     default:
         drawBoard();
-        drawCoordinates();
         for (var i = 0; i < opponentPieces.length; ++i) {
             drawPiece(opponentPieces[i]);
         }
         for (var i = 0; i < playerPieces.length; ++i) {
             drawPiece(playerPieces[i]);
         }
-        drawMoves();
-        if (mouseDown) {
-            if (movingPiece != null) {
-                drawPiece(movingPiece);
-            }
+        if (screenAnimation != null) {
+            drawDividerScreen();
         } else {
-            drawEngagement();
+            drawCoordinates();
+            drawAnimatingPieces();
+            drawMoves();
+            if (mouseDown) {
+                if (movingPiece != null) {
+                    drawPiece(movingPiece);
+                }
+            } else {
+                drawEngagement();
+            }
         }
     }
 }
 
 function redrawCanvasWhenAnimated() {
     if ((animatingPieces.length > 0) ||
-        (animatingTiles.length > 0)) {
+        (animatingTiles.length > 0) ||
+        (screenAnimation != null)) {
 
         draw();
     }

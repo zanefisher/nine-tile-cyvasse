@@ -14,32 +14,38 @@ function setMode(newMode) {
 // transisions.
 function setPhase(newPhase) {
 
+    // remove new player status upon starting a game
+    if (localStorage.newPlayer && (newPhase >= phase.playerToMove)) {
+        localStorage.newPlayer = false;
+    }
+
     // determine visibility of HTML elements
-    SaveBoardForm.hidden = newPhase != phase.boardComplete;
-    LoadBoardForm.hidden = (newPhase >= phase.localSetup) || (localStorage.boards == "[]");
-    LoadGameForm.hidden = (newPhase >= phase.localSetup) || (localStorage.games == "[]");
-    GameModeForm.hidden = (newPhase != phase.boardComplete) || (localStorage.boards == "[]");
-    ExchangeBoardsForm.hidden = newPhase != phase.exchangeBoards;
-    ConfirmExchangeForm.hidden = newPhase != phase.confirmExchange;
-    LoadOpponentForm.hidden = newPhase != phase.localSetup;
-    TurnInterface.hidden = (newPhase < phase.playerToMove); // || (newPhase > phase.playerMoved);
-    MoveCodeInputInterface.hidden = (mode.current != mode.raven) || (newPhase != phase.awaitingOpponentMove);
-    MoveCodeOutputInterface.hidden  = (MoveCodeInputInterface.hidden || (gameHistory.length == 0)) &&
-                ((mode.current != mode.raven) || (newPhase != phase.gameOver) || (gameHistory[gameHistory.length - 1].color != playerColor));
+    setVisibility(NewPlayerMessage, localStorage.newPlayer == "true");
+    setVisibility(SaveBoardForm, newPhase == phase.boardComplete);
+    setVisibility(LoadBoardForm, (newPhase < phase.localSetup) && (localStorage.boards != "[]"));
+    setVisibility(LoadGameForm, (newPhase < phase.localSetup) && (localStorage.games != "[]"));
+    setVisibility(GameModeForm, (newPhase == phase.boardComplete) && (localStorage.boards != "[]"));
+    setVisibility(ExchangeBoardsForm, newPhase == phase.exchangeBoards);
+    setVisibility(ConfirmExchangeForm, newPhase == phase.confirmExchange);
+    setVisibility(LoadOpponentForm, newPhase == phase.localSetup);
+    setVisibility(TurnInterface, (newPhase >= phase.playerToMove));
+    setVisibility(MoveCodeInputInterface, (mode.current == mode.raven) && (newPhase == phase.awaitingOpponentMove));
+    setVisibility(MoveCodeOutputInterface, ((MoveCodeInputInterface.style.display != "none") && (gameHistory.length > 0)) ||
+                ((mode.current == mode.raven) && (newPhase == phase.gameOver) && (gameHistory[gameHistory.length - 1].color == playerColor)));
     UndoButton.disabled = (gameHistory.length == 0) ||
                         ((mode.current != mode.sandbox) && (newPhase != phase.playerMoved) && (newPhase != phase.playerSecondMove));
     EndTurnButton.disabled = ((mode.current == mode.sandbox) && (undoneHistory.length == 0)) ||
                         ((mode.current != mode.sandbox) && (newPhase != phase.playerMoved) && (newPhase != phase.playerSecondMove));
     ResignButton.disabled = (mode.current == mode.raven) && (newPhase == phase.awaitingOpponentMove);
-    RavenModeFirstMessage.hidden = (mode.current != mode.raven) || (gameHistory.length > 0) || (newPhase != phase.playerToMove);
-    RavenModeSecondMessage.hidden = (mode.current != mode.raven) || (gameHistory.length > 0) || (newPhase != phase.awaitingOpponentMove);
-    ExitGameInterface.hidden = (newPhase < phase.playerToMove) || (newPhase >= phase.gameOver);
-    SaveGameInterface.hidden = true;
-    ResignConfirmation.hidden = true;
-    DeleteGameConfirmation.hidden = true;
-    DeleteBoardConfirmation.hidden = true;
-    SaveBoardMessage.hidden = true;
-    SaveGameMessage.hidden = true;
+    setVisibility(RavenModeFirstMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.playerToMove));
+    setVisibility(RavenModeSecondMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.awaitingOpponentMove));
+    setVisibility(ExitGameInterface, (newPhase >= phase.playerToMove) && (newPhase < phase.gameOver));
+    setVisibility(SaveGameInterface, false);
+    setVisibility(ResignConfirmation, false);
+    setVisibility(DeleteGameConfirmation, false);
+    setVisibility(DeleteBoardConfirmation, false);
+    setVisibility(SaveBoardMessage, false);
+    setVisibility(SaveGameMessage, false);
 
     // update help text
     if (newPhase in instructions) {
@@ -50,8 +56,8 @@ function setPhase(newPhase) {
 
     // show terrain info during tile placement
     if (newPhase == phase.placeTiles) {
-        MountainInfo.hidden = false;
-        WaterInfo.hidden = false;
+        setVisibility(MountainInfo, true);
+        setVisibility(WaterInfo, true);
     }
 
     // keep bottomTileArrangement up to date and offer pieces during board setup
@@ -91,7 +97,7 @@ function setPhase(newPhase) {
         ConfirmationCodeInput.value = "";
         ConfirmationCodeOutput.value = playerRollCode.toString(16);
         ConfirmationCodeOutput.select();
-    } else if (!(MoveCodeOutputInterface.hidden)) {
+    } else if (MoveCodeOutputInterface.style.display != "none") {
         MoveCodeOutput.value = encodeLatestMove();
         MoveCodeOutput.select();
     }
@@ -104,15 +110,16 @@ function setPhase(newPhase) {
         } else {
             GameOverText.innerHTML = "<span style=\"font-size:20px\"><b>Victory White!</b></span>";
         }
-        GameOverInterface.hidden = false;
+        setVisibility(GameOverInterface, true);
     } else {
-        GameOverInterface.hidden = true;
+        setVisibility(GameOverInterface, false);
     }
 
     // scroll history to the bottom
     ScrollDiv.scrollTop = ScrollDiv.scrollHeight;
 
     phase.current = newPhase;
+    draw();
 }
 
 
@@ -677,9 +684,18 @@ function executeMove(move) {
     }
     updateLogs();
 
+    //animate
+    if (mode.current != mode.setup) {
+        animateMove(move);
+    }
+
+    updateKingThreats();
+
     //determine next phase
     if (mode.current == mode.sandbox) {
         setPhase(phase.playerToMove);
+    } else if ((phase.current == phase.awaitingOpponentMove) && move.capture && (move.capType == pieceType.king)) {
+        setPhase(phase.gameOver);
     } else if ((mode.current == mode.raven) && (move.color != playerColor)) {
         setPhase(phase.playerToMove);
     } else if (mode.current != mode.setup) {
@@ -693,8 +709,42 @@ function executeMove(move) {
             setPhase(phase.playerMoved);
         }
     }
+}
+
+// Reverse the execution of the last move in gameHistory.
+function undoLastMove() {
+    var move = gameHistory.pop();
+    var pieces = (playerColor == move.color ? playerPieces : opponentPieces);
+    var piece = getItemAtHex(pieces, move.x1, move.y1);
+
+    // revert move
+    piece.x = move.x0;
+    piece.y = move.y0;
+    board[hexToIndex(move.x0, move.y0)].piece = piece;
+    board[hexToIndex(move.x1, move.y1)].piece = null;
+    if (move.capture) {
+        var enemyPieces = (playerColor == move.color ? opponentPieces : playerPieces);
+        var capturedPiece = {type: move.capType, x: move.x2 , y: move.y2, color: !(move.color)};
+        enemyPieces.push(capturedPiece);
+        board[hexToIndex(move.x2, move.y2)].piece = capturedPiece;
+    }
 
     updateKingThreats();
+
+    // determine phase and update history
+    if (mode.current == mode.sandbox) {
+        undoneHistory.splice(0, 0, move);
+        setPhase(phase.playerToMove);
+    } else if ((mode.current == mode.raven) && (move.color != playerColor)) {
+        setPhase(phase.awaitingOpponentMove);
+    } else {
+        if ((gameHistory.length > 0) && (move.color == gameHistory[gameHistory.length - 1].color)) {
+            setPhase(phase.playerSecondMove);
+        } else {
+            setPhase(phase.playerToMove);
+        }
+    }
+    updateLogs();
 }
 
 // Reverse the coordinates of every move in gameHistory and undoneHistory.
@@ -823,9 +873,6 @@ function restoreGameState(gameState) {
     readTerrainFromTiles();
     arrangePieces(gameState.bottomPieceArrangement);
 
-    setMode(mode.sandbox);
-    setPhase(phase.playerToMove);
-
     // play out the game according to the history
     for (moveCount = 0; moveCount < gameState.gameHistory.length; ++moveCount) {
         executeMove(gameState.gameHistory[moveCount]);
@@ -845,5 +892,4 @@ function leaveGame() {
     wipeBoard();
     setUpTiles();
     setPhase(phase.placeKingsTile);
-    draw();
 }
