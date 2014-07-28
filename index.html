@@ -6,27 +6,27 @@
 </head>
 <body>
 
-<img hidden id="BRabble" src="art/brabble.png">
-<img hidden id="BSpears" src="art/bspears.png">
-<img hidden id="BLightHorse" src="art/blighthorse.png">
-<img hidden id="BHeavyHorse" src="art/bheavyhorse.png">
-<img hidden id="BElephant" src="art/belephant.png">
-<img hidden id="BCrossbows" src="art/bcrossbows.png">
-<img hidden id="BTrebuchet" src="art/btrebuchet.png">
-<img hidden id="BDragon" src="art/bdragon.png">
-<img hidden id="BTower" src="art/btower.png">
-<img hidden id="BKing" src="art/bking.png">
+<img style="display:none" id="BRabble" src="art/brabble.png">
+<img style="display:none" id="BSpears" src="art/bspears.png">
+<img style="display:none" id="BLightHorse" src="art/blighthorse.png">
+<img style="display:none" id="BHeavyHorse" src="art/bheavyhorse.png">
+<img style="display:none" id="BElephant" src="art/belephant.png">
+<img style="display:none" id="BCrossbows" src="art/bcrossbows.png">
+<img style="display:none" id="BTrebuchet" src="art/btrebuchet.png">
+<img style="display:none" id="BDragon" src="art/bdragon.png">
+<img style="display:none" id="BTower" src="art/btower.png">
+<img style="display:none" id="BKing" src="art/bking.png">
 
-<img hidden id="WRabble" src="art/wrabble.png">
-<img hidden id="WSpears" src="art/wspears.png">
-<img hidden id="WLightHorse" src="art/wlighthorse.png">
-<img hidden id="WHeavyHorse" src="art/wheavyhorse.png">
-<img hidden id="WElephant" src="art/welephant.png">
-<img hidden id="WCrossbows" src="art/wcrossbows.png">
-<img hidden id="WTrebuchet" src="art/wtrebuchet.png">
-<img hidden id="WDragon" src="art/wdragon.png">
-<img hidden id="WTower" src="art/wtower.png">
-<img hidden id="WKing" src="art/wking.png">
+<img style="display:none" id="WRabble" src="art/wrabble.png">
+<img style="display:none" id="WSpears" src="art/wspears.png">
+<img style="display:none" id="WLightHorse" src="art/wlighthorse.png">
+<img style="display:none" id="WHeavyHorse" src="art/wheavyhorse.png">
+<img style="display:none" id="WElephant" src="art/welephant.png">
+<img style="display:none" id="WCrossbows" src="art/wcrossbows.png">
+<img style="display:none" id="WTrebuchet" src="art/wtrebuchet.png">
+<img style="display:none" id="WDragon" src="art/wdragon.png">
+<img style="display:none" id="WTower" src="art/wtower.png">
+<img style="display:none" id="WKing" src="art/wking.png">
 
 <div style="height:15px; width:950px; margin:auto; font-family:sans-serif; font-size:14px;">
 	<ul style="padding-left:0px; display:inline">
@@ -39,27 +39,27 @@
 
 <table id="Table" style="margin:auto; font-family:sans-serif; font-size:14px">
 	<tr style="height:550px; vertical-align:top">
-		<td hidden style="width:200px"></td>
+		<td style="display:none" style="width:200px"></td>
 		<td id="CanvasCell" style="width:650px">
 			<canvas id="Board" width="650" height="550" style="cursor:default">Oops. You broke it.</canvas>
 		</td>
 		<td style="width:300px;">
 			<div id="ScrollDiv" style="height:510px; overflow:auto">
-				<div hidden id="SaveBoardForm">
+				<div style="display:none" id="SaveBoardForm">
 					<p><b>Save This Board</b></p>
 					<input id="SaveBoardName" type="text" />
 					<button id="SaveBoardButton" type="button">Save</button>
-					<p hidden id ="SaveBoardMessage"></p>
+					<p style="display:none" id ="SaveBoardMessage"></p>
 					<div style="height:28px"></div>
 				</div>
-				<div hidden id="LoadBoardForm">
+				<div style="display:none" id="LoadBoardForm">
 					<p><b>Load a Board</b></p>
 					<select id="LoadBoardSelect"></select>
 					<button id="LoadBoardButton" type="button">Load</button>
 					<button id="DeleteBoardButton" type="button">Delete</button>
 					<div style="height:28px"></div>
 				</div>
-				<div hidden id="DeleteBoardConfirmation">
+				<div style="display:none" id="DeleteBoardConfirmation">
 					<p><b>Load a Board</b></p>
 					<p id="DeleteBoardText"></p>
 					<button id="ConfirmDeleteBoardButton">Delete</button>
@@ -67,7 +67,7 @@
 					<div style="height:28px"></div>
 				</div>
 				<p id="ModeDescriptionText"></p>
-				<div hidden id="LoadOpponentForm">
+				<div style="display:none" id="LoadOpponentForm">
 					<p><b>Choose a Board for Player 2</b></p>
 					<select id="OpponentSelect"></select>
 					<button id="LoadOpponentButton" type="button">Load Opponent</button>
@@ -76,7 +76,7 @@
 					<button id="LoadOpponentBackButton" type="button">Back</button>
 					<div style="height:28px"></div>
 				</div>
-				<div hidden id="ExchangeBoardsForm">
+				<div style="display:none" id="ExchangeBoardsForm">
 					<p><b>Exchange Boards</b></p>
 					<p>Copy the challenge code from the box below and send it to your opponent.</p>
 					<input readonly id="ChallengeCodeOutput" type="text" size="45" />
@@ -88,7 +88,7 @@
 					<br>
 					<button id="ExchangeBoardsBackButton" type="button">Exit Raven Mode</button>
 				</div>
-				<div hidden id="ConfirmExchangeForm">
+				<div style="display:none" id="ConfirmExchangeForm">
 					<p><b>Confirm Board Exchange</b></p>
 					<p>Now copy the conirmation code from the box below and send it to your opponent.</p>
 					<input readonly id="ConfirmationCodeOutput" type="text" size="8" />
@@ -99,67 +99,67 @@
 					<br>
 					<button id="ConfirmExchangeBackButton" type="button">Cancel Challenge</button>
 				</div>
-				<div hidden id="LoadGameForm">
+				<div style="display:none" id="LoadGameForm">
 					<p><b>Load a Game</b></p>
 					<select id="LoadGameSelect"></select>
 					<button id="LoadGameButton" type="button">Load</button>
 					<button id="DeleteGameButton" type="button">Delete</button>
 					<div style="height:28px"></div>
 				</div>
-				<div hidden id="DeleteGameConfirmation">
+				<div style="display:none" id="DeleteGameConfirmation">
 					<p><b>Load a Game</b></p>
 					<p id="DeleteGameText"></p>
 					<button id="ConfirmDeleteGameButton" type="button">Delete</button>
 					<button id="CancelDeleteGameButton" type="button">Cancel</button>
 					<div style="height:28px"></div>
 				</div>
-				<div hidden id="GameModeForm">
+				<div style="display:none" id="GameModeForm">
 					<p><b>Choose a Game Mode</b></p>
 					<button id="RavenButton" type="button">Play by Raven</button>
 					<button id="HotseatButton" type="button">Hotseat</button>
 					<button id="SandboxButton" type="button">Sandbox</button>
 					<div style="height:28px"></div>
 				</div>
-				<p hidden id="RavenModeFirstMessage">You have the first move.</p>
-				<p hidden id="RavenModeSecondMessage">Your opponent has the first move.</p>
-				<div hidden id="TurnInterface">
+				<p style="display:none" id="RavenModeFirstMessage">You have the first move.</p>
+				<p style="display:none" id="RavenModeSecondMessage">Your opponent has the first move.</p>
+				<div style="display:none" id="TurnInterface">
 					<ol id="GameLog" style="padding-left:0px"></ol>
 					<button id="UndoButton">Undo</button>
 					<button id="EndTurnButton">End Turn</button>
 					<ol id="UndoneLog" style="padding-left:0px"></ol>
 				</div>
-				<div hidden id="GameOverInterface">
+				<div style="display:none" id="GameOverInterface">
 					<p id="GameOverText"></p>
 					<button id="GameOverExitButton">Exit</button>
 					<button id="GameOverSandboxButton">Enter Sandbox Mode</button>
 				</div>
-				<div hidden id="MoveCodeOutputInterface">
+				<div style="display:none" id="MoveCodeOutputInterface">
 					<p>Your move has been encoded in the box below. Copy it and send it to your opponent.</p>
 					<input readonly id="MoveCodeOutput" type="text" size="8" />
 					<div style="height:14px"></div>
 				</div>
-				<div hidden id="MoveCodeInputInterface">
+				<div style="display:none" id="MoveCodeInputInterface">
 					<p>Once you receieve your opponent's move code, paste it in the box below, then press 'Done'.</p>
 					<input id="MoveCodeInput" type="text" size="8" />
 					<button id="MoveCodeDoneButton">Done</button>
 				</div>
 				<p id="HelpText"></p>
 			</div>
-			<div hidden id="ExitGameInterface" style="height:10px; position:relative; top:30px">
+			<div style="display:none" id="ExitGameInterface" style="height:10px; position:relative; top:30px">
 				<button id="SaveAndExitGameButton">Save Game</button>
 				<button id="ResignButton">Resign</button>
 			</div>
-			<div hidden id="ResignConfirmation">
+			<div style="display:none" id="ResignConfirmation">
 				<p>Are you sure you want to resign?</p>
 				<button id="ConfirmResignButton">Resign</button>
 				<button id="CancelResignButton">Cancel</button>
 			</div>
-			<div hidden id="SaveGameInterface">
+			<div style="display:none" id="SaveGameInterface">
 				<p><b>Save Game</b></p>
 				<input id="SaveGameName" type="text" />
 				<button id="SaveGameButton">Save</button>
 				<button id="CancelSaveGameButton">Cancel</button>
-				<p hidden id ="SaveGameMessage"></p>
+				<p style="display:none" id ="SaveGameMessage"></p>
 			</div>
 		</td>
 	</tr>
@@ -167,13 +167,13 @@
 		<td>
 			<div style="height:100px; width:500px; margin-left:auto; margin-right:auto">
 				<table>
-					<tr hidden id="PieceInfo">
+					<tr style="display:none" id="PieceInfo">
 						<td>
 							<img id="PieceInfoImage" />
 						</td>
 						<td id="PieceInfoText"></td>
 					</tr>
-					<tr hidden id="MountainInfo">
+					<tr style="display:none" id="MountainInfo">
 						<td>
 							<canvas id="MountainInfoCanvas" width="40" height="40"></canvas>
 						</td>
@@ -181,7 +181,7 @@
 							<b>MOUNTAIN</b><br>Mountain squares block movement and lines of engagement.<br>Pieces cannot be placed on mountain squares.
 						</td>
 					</tr>
-					<tr hidden id="WaterInfo">
+					<tr style="display:none" id="WaterInfo">
 						<td>
 							<canvas id="WaterInfoCanvas" width="40" height="40"></canvas>
 						</td>
