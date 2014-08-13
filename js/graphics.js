@@ -551,8 +551,8 @@ function drawRangeMarker(piece, marker) {
 
     ctx.beginPath();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#FFFFCC";
-    ctx.fillStyle = "#FFFFCC";
+    ctx.strokeStyle = "#F0F0C0";
+    ctx.fillStyle = "#F0F0C0";
     traceArrowHead(x, y);
     ctx.fill();
     ctx.stroke();
@@ -585,10 +585,10 @@ function drawEngagement() {
         //draw numbers
         ctx.beginPath();
         ctx.lineWidth = 3;
-        ctx.font = "bold 12px sans-serif"
+        ctx.font = "bold 14px sans-serif"
         ctx.textAlign = "center";
         ctx.strokeStyle = "#000000";
-        ctx.fillStyle = (red ? "#FF0000" : "#FFFFCC");
+        ctx.fillStyle = (red ? "#FF0000" : "#F0F0C0");
         var text = engagement + "/" + armor;
         var x = hexPosX(piece.x, piece.y) + squareSize/2;
         var y = hexPosY(piece.x, piece.y) + squareSize;

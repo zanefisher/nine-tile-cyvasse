@@ -22,8 +22,8 @@ function setPhase(newPhase) {
     // determine visibility of HTML elements
     setVisibility(NewPlayerMessage, localStorage.newPlayer == "true");
     setVisibility(SaveBoardForm, newPhase == phase.boardComplete);
-    setVisibility(LoadBoardForm, (newPhase < phase.localSetup) && (localStorage.boards != "[]"));
-    setVisibility(LoadGameForm, (newPhase < phase.localSetup) && (localStorage.games != "[]"));
+    setVisibility(LoadBoardForm, (newPhase > phase.loading) && (newPhase <= phase.boardComplete) && (localStorage.boards != "[]"));
+    setVisibility(LoadGameForm, (newPhase > phase.loading) && (newPhase <= phase.boardComplete) && (localStorage.games != "[]"));
     setVisibility(GameModeForm, (newPhase == phase.boardComplete) && (localStorage.boards != "[]"));
     setVisibility(ExchangeBoardsForm, newPhase == phase.exchangeBoards);
     setVisibility(ConfirmExchangeForm, newPhase == phase.confirmExchange);

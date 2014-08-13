@@ -31,7 +31,7 @@
 <div style="height:15px; width:990px; margin:auto; font-family:sans-serif; font-size:14px;">
 	<ul style="padding-left:0px; display:inline">
 		<li style="display:inline; padding:0.5em"><b>Nine-Tile Cyvasse</b></li>
-		<li style="display:inline; padding:0.5em"><a href="game.html">Play</a></li>
+		<li style="display:inline; padding:0.5em"><a href="index.html">Play</a></li>
 		<li style="display:inline; padding:0.5em"><a href="introduction.html">Introduction</a></li>
 		<li style="display:inline; padding:0.5em"><a href="https://docs.google.com/file/d/0B3smNWZwMO2fZjc5aVZfLTdURlU">Rulebook</a></li>
 	</ul>
@@ -43,7 +43,7 @@
 			<canvas id="Board" width="640" height="490" style="cursor:default">Oops. You broke it.</canvas>
 		</td>
 		<td style="width:350px">
-			<p id="HelpText">
+			<p id="HelpText"></p>
 			<table style="margin:auto">
 				<tr>
 					<td>
@@ -61,14 +61,28 @@
 	</tr>
 	<tr>
 		<td>
-			<div style="height:75px">
-				<table id="PieceInfo" style="margin:auto">
-					<tr>
+			<div style="height:100px width:500px; margin-left:auto; margin-right:auto">
+				<table>
+					<tr id="PieceInfo" style="display:none">
 						<td>
-							<img id="PieceInfoImage">
+							<img id="PieceInfoImage" />
+						</td>
+						<td id="PieceInfoText"></td>
+					</tr>
+					<tr id="MountainInfo" style="display:none">
+						<td>
+							<canvas id="MountainInfoCanvas" width="40" height="40"></canvas>
 						</td>
 						<td>
-							<p id="PieceInfoText">
+							<b>MOUNTAIN</b><br>Mountain squares block movement and lines of engagement.<br>Pieces cannot be placed on mountain squares.
+						</td>
+					</tr>
+					<tr id="WaterInfo" style="display:none">
+						<td>
+							<canvas id="WaterInfoCanvas" width="40" height="40"></canvas>
+						</td>
+						<td>
+							<b>WATER</b><br>Pieces that are on water squares cannot engage.
 						</td>
 					</tr>
 				</table>
@@ -155,6 +169,23 @@ function showPieceInfo(piece) {
 	}
 }
 
+function showTerrainInfo(hex) {
+    if (hexInBounds(hex.x, hex.y) && (phase >= 3)) {
+        var terrain = board[hexToIndex(hex.x, hex.y)].terrain;
+        if (terrain == terType.mountain) {
+            MountainInfo.style.display = "inline";
+            WaterInfo.style.display = "none";
+            return;
+        } else if (terrain == terType.water) {
+            MountainInfo.style.display = "none";
+            WaterInfo.style.display = "inline";
+            return;
+        }
+    }
+    MountainInfo.style.display = "none";
+    WaterInfo.style.display = "none";
+}
+
 
 //Component Values
 
@@ -197,8 +228,8 @@ function setPhase(newPhase) {
 		NextButton.style.display = "inline";
 	}
 
-	PreviousButton.disabled = newPhase == 0;
-	NextButton.disabled = (newPhase == 9) || (newPhase == 0);
+	PreviousButton.disabled = newPhase == 1;
+	NextButton.disabled = (newPhase == 9) || (newPhase == 1);
 
 	clearBoard();
 	targetHex = null;
@@ -215,12 +246,12 @@ function setPhase(newPhase) {
 		HelpText.innerHTML = "Loading...";
 		break;
 	case 1:
-		HelpText.innerHTML = "Most types of pieces, like this <img src=\"art/wrabble.png\" width=\"20\" height=\"20\"> Rabble, move one square at a time.<br><br>Move the Rabble to the circle.";
+		HelpText.innerHTML = "<b>About The Game</b><br><br>Nine-Tile Cyvasse is a board game similar to chess. Each player has at their disposal a number of pieces, which they take turns to move one at a time. The pieces are of several different types, and each type has its own rules and properties.<br><br>This introduction will teach you the rules of the game through a series of small tasks and puzzles against an opponent who doesn't move their pieces.<br><br><br><b>Basic Movement</b><br><br>Most types of pieces, like this <img src=\"art/wrabble.png\" width=\"20\" height=\"20\"> Rabble, move one square at a time.<br><br><i>Move the Rabble to the circle, then press 'Next'.</i>";
 		createPiece(pieceType.rabble, 5, 4, playerColor);
 		targetHex = {x: 6, y: 7};
 		break;
 	case 2:
-		HelpText.innerHTML = "The <img src=\"art/wlighthorse.png\" width=\"20\" height=\"20\"> Light Horse can move three spaces at a time.<br><br>The <img src=\"art/wtower.png\" width=\"20\" height=\"20\"> Tower cannot move at all.<br><br>The squares marked with an 'X' are <b>mountains</b>, which pieces cannot move onto.<br><br>Pieces of the same color can move through one another's squares.<br><br>Move the Light Horse to the circle.";
+		HelpText.innerHTML = "<b>Advanced Movement and Obstacles</b><br><br>The <img src=\"art/wlighthorse.png\" width=\"20\" height=\"20\"> Light Horse can move three spaces at a time.<br><br>The <img src=\"art/wtower.png\" width=\"20\" height=\"20\"> Tower cannot move at all.<br><br>The squares marked with an 'X' are <b>mountains</b>, which pieces cannot move onto.<br><br>Pieces of the same color can move through one another's squares.<br><br><i>Move the Light Horse to the circle.</i>";
 		createMountainRange();
 		board[hexToIndex(5, 3)].terrain = terType.open;
 		board[hexToIndex(6, 5)].terrain = terType.mountain;
@@ -235,7 +266,7 @@ function setPhase(newPhase) {
 		targetHex = {x: 9, y: 11};
 		break;
 	case 3:
-		HelpText.innerHTML = "Mouse over a piece to see its name and special properties.<br><br><b>Capturing</b> works like normal movement, but the capture must be made <b>along a straight line</b> (i.e. in one of the six directions pictured below).<br><br><img src=\"art/directions.png\"><br><br>When you can make a capture, it will show up as a red dot.<br><br>Use the Dragon to capture all the Crossbows.";
+		HelpText.innerHTML = "<b>Properties of Pieces</b><br><br>Mouse over a piece to see its name and special properties.<br><br><br><b>Capturing</b><br><br>Capturing works like normal movement, but the capture must be made <b>along a straight line</b> (i.e. in one of the six directions pictured below).<br><br><img src=\"art/directions.png\"><br><br>When you can make a capture, it will show up as a red dot.<br><br><i>Use the Dragon to capture all the Crossbows.</i>";
 		createPiece(pieceType.dragon, 6, 6, playerColor);
 		createPiece(pieceType.crossbows, 4, 7, !playerColor);
 		createPiece(pieceType.crossbows, 7, 8, !playerColor);
@@ -249,7 +280,7 @@ function setPhase(newPhase) {
 		// board[hexToIndex(7, 9)].terrain = terType.mountain;
 		break;
 	case 4:
-		HelpText.innerHTML = "Unlike those <b>unarmored</b> Crossbows, most pieces must be <b>engaged</b> before they can be captured.<br><br>Pieces automatically engage any adjcacent opposing piece. You can tell if a peice is being engaged by mousing over it: <b>red arrows</b> will appear to indicate which piece is engaging it.<br><br>Use the Light Horse to engage and capture all the Rabble in 4 moves.";
+		HelpText.innerHTML = "<b>Engagement</b><br><br>Unlike those <b>unarmored</b> Crossbows, most pieces must be <b>engaged</b> before they can be captured.<br><br>Pieces automatically engage any adjcacent opposing piece. You can tell if a peice is being engaged by mousing over it: <b>red arrows</b> will appear to indicate which piece is engaging it.<br><br><i>Use the Light Horse to engage and capture all the Rabble in 4 moves.</i>";
 		HintText.innerHTML = "(HINT: The Light Horse has a special property that allows it to \"jump\" over pieces it captures. Each time you capture a Rabble, make sure to land where you can engage another Rabble, so you can capture it immediately next move.)";
 		moveLimit = 4;
 		createPiece(pieceType.lightHorse, 4, 3, playerColor);
@@ -259,7 +290,7 @@ function setPhase(newPhase) {
 		createPiece(pieceType.rabble, 4, 6, !playerColor);
 		break;
 	case 5:
-		HelpText.innerHTML = "Some pieces can engage at a distance.<br><br>Crossbows have an <b>engagement range</b> of 3, which means they can engage other pieces up to 3 squares away, <b>along a straight line</b>.<br><br>Mousing over a piece will show its engagement range, represented by yellow arrowheads.<br><br>You do not have to capture using the same piece that is engaging the captured piece.<br><br>Capture all the Rabble in 4 moves.";
+		HelpText.innerHTML = "<b>Engagement Range</b><br><br>Some pieces can engage at a distance.<br><br>Crossbows have an <b>engagement range</b> of 3, which means they can engage other pieces up to 3 squares away, <b>along a straight line</b>.<br><br>Mousing over a piece will show its engagement range, represented by yellow arrowheads.<br><br>You do not have to capture using the same piece that is engaging the captured piece.<br><br><i>Capture all the Rabble in 4 moves.</i>";
 		HintText.innerHTML = "(HINT: You will only be able to move the Crossbows once. After capturing the first Rabble, try to position the Crossbows where it will engage both the remaining Rabble at the same time.)";
 		moveLimit = 4;
 		createPiece(pieceType.lightHorse, 4, 3, playerColor);
@@ -269,19 +300,8 @@ function setPhase(newPhase) {
 		createPiece(pieceType.rabble, 7, 8, !playerColor);
 		break;
 	case 6:
-		HelpText.innerHTML = "Lines of engagement cannont pass over mountains. They also cannot pass over enemy pieces.<br><br>For example, the rightmost Rabble is not engaged by the Crossbows because the line of engagement is blocked by the Rabble to its left.<br><br>Capture all the Rabble in 5 moves. (You don't need to move the Crossbows this time.)";
-		moveLimit = 5;
-		createPiece(pieceType.crossbows, 3, 3, playerColor);
-		createPiece(pieceType.lightHorse, 5, 8, playerColor);
-		createPiece(pieceType.tower, 3, 4, playerColor);
-		board[hexToIndex(4, 3)].terrain = terType.mountain;
-		createPiece(pieceType.rabble, 3, 6, !playerColor);
-		createPiece(pieceType.rabble, 5, 5, !playerColor);
-		createPiece(pieceType.rabble, 6, 6, !playerColor);
-		createPiece(pieceType.rabble, 6, 3, !playerColor);
-		break;
-	case 7:
-		HelpText.innerHTML = "<b>Heavy</b> pieces like the Tower must by engaged by <i>two</i> pieces before they can be captured.<br><br>Mousing over a piece will show you how many pieces are engaging it&#8212if it can be captured, the information will show up in red.<br><br>The gray squares are <b>water</b>. Pieces in water cannot engage at all.<br><br>Capture the Towers in 3 moves.";
+		HelpText.innerHTML = "<b>Heavy Pieces</b><br><br><b>Heavy</b> pieces like the Tower must be engaged by <i>two</i> pieces before they can be captured.<br><br><i>(<b>Unarmored</b> pieces, on the other hand, do not need to be engaged at all.)</i><br><br>Mousing over a piece will show you how many pieces are engaging it&#8212if it can be captured, the information will show up in red.<br><br>The gray squares are <b>water</b>. Pieces in water cannot engage at all.<br><br><i>Capture both Towers in 3 moves.</i>";
+		HintText.innerHTML = "(HINT: Try to position the right Crossbows so that it's engaging both Towers.)";
 		createPiece(pieceType.crossbows, 4, 3, playerColor);
 		createPiece(pieceType.crossbows, 7, 8, playerColor);
 		createPiece(pieceType.heavyHorse, 7, 6, playerColor);
@@ -294,8 +314,23 @@ function setPhase(newPhase) {
 		board[hexToIndex(5, 7)].terrain = terType.water;
 		moveLimit = 3;
 		break;
+	case 7:
+		HelpText.innerHTML = "<b>Obstructing Lines of Engagement</b><br><br>Lines of engagement cannont pass over mountains. They also cannot pass over enemy pieces.<br><br>For example, the leftmost Tower is not engaged by the Crossbows because the line of engagement is blocked by the Tower to its right.<br><br><i>Capture all the Towers in 5 moves.</i>";
+		HintText.innerHTML = "(HINT: Once you move the Rabble into the water, it won't be able to engage anymore. Therefore, you should capture the Tower on the water square last.)";
+		moveLimit = 5;
+		board[hexToIndex(4, 5)].terrain = terType.mountain;
+		board[hexToIndex(5, 6)].terrain = terType.mountain;
+		board[hexToIndex(4, 3)].terrain = terType.water;
+		createPiece(pieceType.rabble, 5, 3, playerColor);
+		createPiece(pieceType.crossbows, 5, 7, playerColor);
+		createPiece(pieceType.crossbows, 7, 6, playerColor);
+		createPiece(pieceType.tower, 4, 3, !playerColor);
+		createPiece(pieceType.tower, 4, 4, !playerColor);
+		createPiece(pieceType.tower, 5, 4, !playerColor);
+		createPiece(pieceType.tower, 5, 5, !playerColor);
+		break;
 	case 8:
-		HelpText.innerHTML = "Spears can only engage and capture forwards.<br><br>Any piece that enters a square directly in front of an opposing Spears must end its movement in that square. Blue octagons indicate spaces where a piece is stopped by an enemy Spears.<br><br>Capture all the Spears in 6 moves.";
+		HelpText.innerHTML = "<b>Spears</b><br><br>Spears can only engage and capture forwards.<br><br>Any piece that enters a square directly in front of an opposing Spears must end its movement in that square. Blue octagons indicate spaces where a piece is stopped by an enemy Spears.<br><br><i>Capture all the Spears in 6 moves.</i>";
 		moveLimit = 6;
 		createPiece(pieceType.spears, 3, 5, !playerColor);
 		createPiece(pieceType.spears, 5, 7, !playerColor);
@@ -307,8 +342,8 @@ function setPhase(newPhase) {
 		createPiece(pieceType.spears, 7, 8, playerColor);
 		break;
 	case 9:
-		HelpText.innerHTML = "The object of the game is to capture your opponent's King.<br><br>Capture black's King in 7 moves. When you're finished, you can play <a href=\"game.html\">here</a>.";
-		HintText.innerHTML = "(HINT: you've seen Towers before, but this time it's important to note that they prevent adjacent enemy pieces from engaging other. You may need to capture one of the Towers before going after the King.)";
+		HelpText.innerHTML = "<b>Winning</b><br><br>The object of the game is to capture your opponent's King. See if you can do it in 7 moves.<br><br>You have some new pieces in play. Mouse over them to see how they work.<br><br>When you're finished, you can play <a href=\"game.html\">here</a>.";
+		HintText.innerHTML = "(HINT: you've seen Towers before, but this time it's important to note that they prevent adjacent enemy pieces from engaging other pieces. You may need to capture one of the Towers before going after the King.)";
 		moveLimit = 7;
 		createPiece(pieceType.heavyHorse, 4, 2, playerColor);
 		createPiece(pieceType.elephant, 7, 5, playerColor);
@@ -509,6 +544,39 @@ function hexDistance(x1, y1, x2, y2) {
 
 
 //Draw Functions
+function drawTerrainThumbails() {
+
+    var left = 2;
+    var right = MountainInfoCanvas.width - left;
+    var top = 2;
+    var bottom = MountainInfoCanvas.height - top;
+    var width = right - left;
+    var height = bottom - top;
+
+    var mctx = MountainInfoCanvas.getContext("2d");
+    mctx.clearRect(0, 0, MountainInfoCanvas.width, MountainInfoCanvas.height);
+    mctx.beginPath();
+    mctx.lineWidth = 2;
+    mctx.strokeStyle = "#000000";
+    mctx.fillStyle = "#FFFFFF";
+    mctx.fillRect(left, top, width, height);
+    mctx.rect(left, top, width, height);
+    mctx.moveTo(left, top);
+    mctx.lineTo(right, bottom);
+    mctx.moveTo(right, top);
+    mctx.lineTo(left, bottom);
+    mctx.stroke();
+
+    var wctx = WaterInfoCanvas.getContext("2d");
+    wctx.clearRect(0, 0, WaterInfoCanvas.width, WaterInfoCanvas.height);
+    wctx.beginPath();
+    wctx.lineWidth = 2;
+    wctx.strokeStyle = "#000000";
+    wctx.fillStyle = "#C0C0C0";
+    wctx.fillRect(left, top, width, height);
+    wctx.rect(left, top, width, height);
+    wctx.stroke();
+}
 
 function drawSquare(x, y, terrain) {
 	ctx.beginPath();
@@ -641,8 +709,8 @@ function drawRangeMarker(piece, marker) {
 
     ctx.beginPath();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#FFFFCC";
-    ctx.fillStyle = "#FFFFCC";
+    ctx.strokeStyle = "#F0F0C0";
+    ctx.fillStyle = "#F0F0C0";
     traceArrowHead(x, y);
     ctx.stroke();
     ctx.fill();
@@ -675,13 +743,13 @@ function drawEngagement() {
 	    }
 
 		//draw numbers
-		if (phase >= 7) {
+		if (phase >= 6) {
 			ctx.beginPath();
 			ctx.lineWidth = 3;
-			if (phase == 7) {
+			if (phase == 6) {
 				ctx.font = "bold 16px sans-serif"
 			} else {
-				ctx.font = "bold 12px sans-serif"
+				ctx.font = "bold 14px sans-serif"
 			}
 			ctx.textAlign = "center";
 			ctx.strokeStyle = "#000000";
@@ -1170,10 +1238,9 @@ function objectiveComplete() {
 		for (var i = 0; i < opponentPieces.length; ++i) {
 			if (opponentPieces[i].type == pieceType.king) {
 				return false;
-			} else {
-				return true;
 			}
 		}
+		return true;
 	} else {
 		return opponentPieces.length == 0;
 	}
@@ -1278,7 +1345,7 @@ Board.onmousemove = function(event) {
 	updateMousePos(event);
 	if (!mouseDown) {
 		var piece = pieceUnderMouse();
-		if (phase >= 2) {
+		if (phase >= 3) {
 			if (piece != displayedPiece) {
 				showPieceInfo(piece);
 			}
@@ -1298,6 +1365,7 @@ Board.onmousemove = function(event) {
 		draw();
 		lastFrame = now;
 	}
+    showTerrainInfo(hexAtPos(mouseX, mouseY));
 	moved = true;
 };
 
@@ -1384,6 +1452,11 @@ NextButton.onclick = function() {
 	resetCount = 0;
 	setPhase(phase + 1);
 }
+
+
+// Draw terrain thumbnails.
+
+drawTerrainThumbails();
 
 
 // Ensure art is loaded.
