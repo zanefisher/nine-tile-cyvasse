@@ -73,7 +73,7 @@ function begin() {
 // Autosave
 
 window.addEventListener("beforeunload", function(event) {
-    if (phase.current >= phase.playerToMove) {
+    if (phase.current >= phase.placeKing) {
         localStorage.autosave = JSON.stringify(getGameState());
     }
 });
