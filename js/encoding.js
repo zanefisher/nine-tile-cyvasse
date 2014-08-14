@@ -67,8 +67,12 @@ function encodeTiles(tileArrangement) {
     return string;
 }
 
+function comparePieces(a, b) {
+    return ((144 * a.type) + (12 * a.x) + a.y) - ((144 * b.type) + (12 * b.x) + b.y);
+}
+
 function encodePieces(pieceArrangement) {
-    pieceArrangement = pieceArrangement.sort(function(a, b) { return a.type - b.type });
+    pieceArrangement = pieceArrangement.sort(comparePieces);
     var string = "";
     for (var i = 0; i < pieceArrangement.length; ++i) {
         string += pieceArrangement[i].x - pieceArrangement[i].y - 1;

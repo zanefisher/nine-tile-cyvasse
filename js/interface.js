@@ -368,22 +368,27 @@ SandboxButton.onclick = function() {
 };
 
 RavenButton.onclick = function() {
+    rollInitiative();
     setMode(mode.raven);
     setPhase(phase.exchangeBoards);
 };
 
 ExchangeBoardsDoneButton.onclick = function() {
+    setMode(mode.setup);
     setPhase(phase.confirmExchange);
 };
 
 LoadOpponentBackButton.onclick = function() {
+    setMode(mode.setup);
     setPhase(phase.boardComplete);
 };
 
 ExchangeBoardsBackButton.onclick = function() {
+    setMode(mode.setup);
     setPhase(phase.boardComplete);
 };
 
 ConfirmExchangeBackButton.onclick = function() {
+    setMode(mode.setup);
     setPhase(phase.boardComplete);
 };

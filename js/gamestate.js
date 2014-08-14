@@ -86,7 +86,6 @@ function setPhase(newPhase) {
 
     // output raven mode codes
     if (newPhase == phase.exchangeBoards) {
-        rollInitiative();
         ChallengeCodeInput.value = "";
         ChallengeCodeOutput.value = encodeBoard(bottomTileArrangement, bottomPieceArrangement, playerRollCode);
         ChallengeCodeOutput.select();
@@ -835,6 +834,16 @@ function wipeBoard() {
 // of the pieces is not recorded. Instead, each player's board setup and the
 // game history are recorded.
 function getGameState() {
+    if (phase.current < phase.placeKing) {
+        return null;
+    }
+    if (mode.current == mode.setup) {
+        if (phase.current >= phase.placePieces) {
+            bottomPieceArrangement = getPieceArrangement();
+        } else {
+            bottomPieceArrangement = null;
+        }
+    }
     var gameState = {
         mode: mode.current,
         phase: phase.current,
@@ -856,29 +865,51 @@ function getGameState() {
 // Set the current game state according to the given game state object.
 function restoreGameState(gameState) {
 
-    topColor = !gameState.topColor;
-    playerColor = !topColor;
+    if (gameState == null) {
+        setPhase(phase.placeKingsTile);
+        return;
+    }
+
     if (gameState.mode == mode.raven) {
         playerRollCode = gameState.playerRollCode;
         opponentRollCode = gameState.opponentRollCode;
     }
 
-    clearSlots();
-    clearBoardOfPieces();
-    arrangeTiles(gameState.topTileArrangement);
-    readTerrainFromTiles();
-    arrangePieces(gameState.topPieceArrangement);
-    reverseBoard();
-    arrangeTiles(gameState.bottomTileArrangement);
-    readTerrainFromTiles();
-    arrangePieces(gameState.bottomPieceArrangement);
+    if (gameState.phase < phase.playerToMove) {
 
-    // play out the game according to the history
-    for (moveCount = 0; moveCount < gameState.gameHistory.length; ++moveCount) {
-        executeMove(gameState.gameHistory[moveCount]);
+        topColor = gameState.topColor;
+        playerColor = !topColor;
+
+        if (gameState.bottomTileArrangement != null) {
+            arrangeTiles(gameState.bottomTileArrangement);
+            if (gameState.bottomPieceArrangement != null) {
+                arrangePieces(gameState.bottomPieceArrangement);
+            }
+        }
+        
+    } else {
+
+        topColor = !gameState.topColor;
+        playerColor = !topColor;
+
+        clearSlots();
+        clearBoardOfPieces();
+        arrangeTiles(gameState.topTileArrangement);
+        readTerrainFromTiles();
+        arrangePieces(gameState.topPieceArrangement);
+        reverseBoard();
+        arrangeTiles(gameState.bottomTileArrangement);
+        readTerrainFromTiles();
+        arrangePieces(gameState.bottomPieceArrangement);
+
+        // play out the game according to the history
+        for (moveCount = 0; moveCount < gameState.gameHistory.length; ++moveCount) {
+            executeMove(gameState.gameHistory[moveCount]);
+        }
+
+        undoneHistory = gameState.undoneHistory;
+
     }
-
-    undoneHistory = gameState.undoneHistory;
 
     setMode(gameState.mode);
     setPhase(gameState.phase);
