@@ -150,7 +150,6 @@ Board.onmouseup = function() {
 };
 
 Board.onmousedown = function(event) {
-    event.preventDefault();
     mouseDown = true;
     var x = mouseX;
     var y = mouseY;
@@ -186,4 +185,5 @@ Board.onmousedown = function(event) {
         Board.style.cursor = "none";
     }
     draw();
+    event.preventDefault();
 };

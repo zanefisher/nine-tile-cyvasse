@@ -1410,7 +1410,6 @@ function moveToFront(item, list) {
 }
 
 Board.onmousedown = function() {
-	event.preventDefault();
 	mouseDown = true;
 	var x = mouseX;
 	var y = mouseY;
@@ -1429,6 +1428,7 @@ Board.onmousedown = function() {
 		showCaptures = getCaptures(piece);
 	}
 	draw();
+	event.preventDefault();
 };
 
 
