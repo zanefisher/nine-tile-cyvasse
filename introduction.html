@@ -1394,6 +1394,7 @@ Board.onmouseup = function() {
 			executeMove(move);
 		}
 		movingPiece = null;
+        Board.style.cursor = "pointer";
 	}
 	showMoves = [];
 	showCaptures = [];
@@ -1423,6 +1424,7 @@ Board.onmousedown = function() {
 			grabX = x - movingPieceX;
 			grabY = y - movingPieceY;
 			moveToFront(piece, (playerOwns(piece) ? playerPieces : opponentPieces));
+            Board.style.cursor = "none";
 		}
 		showMoves = getMoves(piece);
 		showCaptures = getCaptures(piece);

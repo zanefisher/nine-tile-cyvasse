@@ -69,6 +69,7 @@ function setPhase(newPhase) {
         }
         offerKing();
     } else if ((newPhase == phase.placePieces) && (phase.current == phase.placeKing)) {
+        bottomTileArrangement = getTileArrangement();
         offerPieces();
     }
 
