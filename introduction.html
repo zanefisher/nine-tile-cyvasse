@@ -1248,15 +1248,13 @@ function objectiveComplete() {
 
 function updateMoveCounter() {
 	if (moveLimit > 0) {
-		if (moveCount < moveLimit) {
+		if (objectiveComplete()) {
+			MoveCounter.innerHTML = "Success!";
+		} else if (moveCount < moveLimit) {
 			MoveCounter.innerHTML = (moveLimit - moveCount) + " moves left."
 		} else {
-			if (objectiveComplete()) {
-				MoveCounter.innerHTML = "Success!";
-			} else {
-				MoveCounter.innerHTML = "<span style=\"color:red\"<b>" + (moveLimit - moveCount) + " moves left. Reset to try again.</b></span>"
-				HintText.style.display = "inline";
-			}
+			MoveCounter.innerHTML = "<span style=\"color:red\"<b>0 moves left. Reset to try again.</b></span>"
+			HintText.style.display = "inline";
 		}
 	} else {
 		MoveCounter.innerHTML = "";
