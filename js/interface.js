@@ -374,7 +374,6 @@ RavenButton.onclick = function() {
 };
 
 ExchangeBoardsDoneButton.onclick = function() {
-    setMode(mode.setup);
     setPhase(phase.confirmExchange);
 };
 
