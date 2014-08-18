@@ -325,7 +325,10 @@ CancelDeleteGameButton.onclick = function() {
 };
 
 ResignButton.onclick = function() {
-    if (mode.current == mode.sandbox) {
+    if ((phase.current == phase.exchangeBoards) || (phase.current == phase.confirmExchange)) {
+        setMode(mode.setup);
+        setPhase(phase.boardComplete);
+    } else if (mode.current == mode.sandbox) {
         leaveGame();
     } else {
         setVisibility(ExitGameInterface, false);
@@ -378,16 +381,6 @@ ExchangeBoardsDoneButton.onclick = function() {
 };
 
 LoadOpponentBackButton.onclick = function() {
-    setMode(mode.setup);
-    setPhase(phase.boardComplete);
-};
-
-ExchangeBoardsBackButton.onclick = function() {
-    setMode(mode.setup);
-    setPhase(phase.boardComplete);
-};
-
-ConfirmExchangeBackButton.onclick = function() {
     setMode(mode.setup);
     setPhase(phase.boardComplete);
 };
