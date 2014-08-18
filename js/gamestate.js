@@ -1,4 +1,4 @@
-function setMode(newMode) { 
+function setMode(newMode) {
     if (newMode == mode.sandbox) {
         EndTurnButton.innerHTML = "Redo";
         ResignButton.innerHTML = "Exit";
@@ -19,7 +19,7 @@ function setPhase(newPhase) {
         localStorage.newPlayer = false;
     }
 
-    if (mode.current == mode.ravenleaveGame) {
+    if (mode.current == mode.raven) {
         if ((newPhase == phase.exchangeBoards) || (newPhase == phase.confirmExchange)) {
             ResignButton.innerHTML = "Exit";
         } else {
