@@ -19,6 +19,14 @@ function setPhase(newPhase) {
         localStorage.newPlayer = false;
     }
 
+    if (mode.current == mode.raven) {
+        if ((newPhase == phase.exchangeBoards) || (newPhase == phase.confirmExchange)) {
+            ResignButton.innerHTML = "Exit";
+        } else {
+            ResignButton.innerHTML = "Resign";
+        }
+    }
+
     // determine visibility of HTML elements
     setVisibility(NewPlayerMessage, localStorage.newPlayer == "true");
     setVisibility(SaveBoardForm, newPhase == phase.boardComplete);
@@ -39,7 +47,7 @@ function setPhase(newPhase) {
     ResignButton.disabled = (mode.current == mode.raven) && (newPhase == phase.awaitingOpponentMove);
     setVisibility(RavenModeFirstMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.playerToMove));
     setVisibility(RavenModeSecondMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.awaitingOpponentMove));
-    setVisibility(ExitGameInterface, (newPhase >= phase.playerToMove) && (newPhase < phase.gameOver));
+    setVisibility(ExitGameInterface, ((newPhase >= phase.playerToMove) && (newPhase < phase.gameOver)) || (newPhase == phase.exchangeBoards) || (newPhase == phase.confirmExchange));
     setVisibility(SaveGameInterface, false);
     setVisibility(ResignConfirmation, false);
     setVisibility(DeleteGameConfirmation, false);
