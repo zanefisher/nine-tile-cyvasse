@@ -33,23 +33,23 @@ if (localStorage.newPlayer == undefined) {
 var artLoaded = 0;
 
 function beginIfArtLoaded() {
-    if (++artLoaded == pieceArt.length) {
+    if (++artLoaded == PieceArt.length) {
         begin();
     }
 }
 
-for (var i = 0; i < pieceArt.length; ++i) {
-    var image = pieceArt[i];
+for (var i = 0; i < PieceArt.length; ++i) {
+    var image = PieceArt[i];
     if (image.complete && (image.naturalWidth > 0))  {
         ++artLoaded;
     } else {
-        pieceArt[i].onload = beginIfArtLoaded;
+        PieceArt[i].onload = beginIfArtLoaded;
     }
 }
-if (artLoaded == pieceArt.length) {
+if (artLoaded == PieceArt.length) {
     begin();
 } else {
-    setPhase(phase.loading);
+    setPhase(Phase.loading);
 }
 
 
@@ -58,22 +58,22 @@ if (artLoaded == pieceArt.length) {
 function begin() {
     if (localStorage.autosave == undefined) {
         setUpTiles();
-        setMode(mode.setup);
-        setPhase(phase.placeKingsTile);
+        setMode(Mode.setup);
+        setPhase(Phase.placeKingsTile);
     } else {
         restoreGameState(JSON.parse(localStorage.autosave));
         localStorage.removeItem("autosave");
     }
     drawTerrainThumbails();
     draw();
-    setInterval(redrawCanvasWhenAnimated, redrawInterval);
+    setInterval(redrawCanvasWhenAnimated, RedrawInterval);
 }
 
 
 // Autosave
 
 window.addEventListener("beforeunload", function(event) {
-    if (phase.current >= phase.placeKing) {
+    if (Phase.current >= Phase.placeKing) {
         localStorage.autosave = JSON.stringify(getGameState());
     }
 });

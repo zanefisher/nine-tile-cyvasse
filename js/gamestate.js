@@ -1,12 +1,12 @@
 function setMode(newMode) {
-    if (newMode == mode.sandbox) {
+    if (newMode == Mode.sandbox) {
         EndTurnButton.innerHTML = "Redo";
         ResignButton.innerHTML = "Exit";
     } else {
         EndTurnButton.innerHTML = "End Turn";
         ResignButton.innerHTML = "Resign";
     }
-    mode.current = newMode;
+    Mode.current = newMode;
 }
 
 // Set the current phase to the given phase, display and update the appropriate
@@ -15,12 +15,12 @@ function setMode(newMode) {
 function setPhase(newPhase) {
 
     // remove new player status upon starting a game
-    if (localStorage.newPlayer && (newPhase >= phase.playerToMove)) {
+    if (localStorage.newPlayer && (newPhase >= Phase.playerToMove)) {
         localStorage.newPlayer = false;
     }
 
-    if (mode.current == mode.raven) {
-        if ((newPhase == phase.exchangeBoards) || (newPhase == phase.confirmExchange)) {
+    if (Mode.current == Mode.raven) {
+        if ((newPhase == Phase.exchangeBoards) || (newPhase == Phase.confirmExchange)) {
             ResignButton.innerHTML = "Exit";
         } else {
             ResignButton.innerHTML = "Resign";
@@ -29,25 +29,25 @@ function setPhase(newPhase) {
 
     // determine visibility of HTML elements
     setVisibility(NewPlayerMessage, localStorage.newPlayer == "true");
-    setVisibility(SaveBoardForm, newPhase == phase.boardComplete);
-    setVisibility(LoadBoardForm, (newPhase > phase.loading) && (newPhase <= phase.boardComplete) && (localStorage.boards != "[]"));
-    setVisibility(LoadGameForm, (newPhase > phase.loading) && (newPhase <= phase.boardComplete) && (localStorage.games != "[]"));
-    setVisibility(GameModeForm, (newPhase == phase.boardComplete) && (localStorage.boards != "[]"));
-    setVisibility(ExchangeBoardsForm, newPhase == phase.exchangeBoards);
-    setVisibility(ConfirmExchangeForm, newPhase == phase.confirmExchange);
-    setVisibility(LoadOpponentForm, newPhase == phase.localSetup);
-    setVisibility(TurnInterface, (newPhase >= phase.playerToMove));
-    setVisibility(MoveCodeInputInterface, (mode.current == mode.raven) && (newPhase == phase.awaitingOpponentMove));
-    setVisibility(MoveCodeOutputInterface, ((MoveCodeInputInterface.style.display != "none") && (gameHistory.length > 0)) ||
-                ((mode.current == mode.raven) && (newPhase == phase.gameOver) && (gameHistory[gameHistory.length - 1].color == playerColor)));
-    UndoButton.disabled = (gameHistory.length == 0) ||
-                        ((mode.current != mode.sandbox) && (newPhase != phase.playerMoved) && (newPhase != phase.playerSecondMove));
-    EndTurnButton.disabled = ((mode.current == mode.sandbox) && (undoneHistory.length == 0)) ||
-                        ((mode.current != mode.sandbox) && (newPhase != phase.playerMoved) && (newPhase != phase.playerSecondMove));
-    ResignButton.disabled = (mode.current == mode.raven) && (newPhase == phase.awaitingOpponentMove);
-    setVisibility(RavenModeFirstMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.playerToMove));
-    setVisibility(RavenModeSecondMessage, (mode.current == mode.raven) && (gameHistory.length == 0) && (newPhase == phase.awaitingOpponentMove));
-    setVisibility(ExitGameInterface, ((newPhase >= phase.playerToMove) && (newPhase < phase.gameOver)) || (newPhase == phase.exchangeBoards) || (newPhase == phase.confirmExchange));
+    setVisibility(SaveBoardForm, newPhase == Phase.boardComplete);
+    setVisibility(LoadBoardForm, (newPhase > Phase.loading) && (newPhase <= Phase.boardComplete) && (localStorage.Boards != "[]"));
+    setVisibility(LoadGameForm, (newPhase > Phase.loading) && (newPhase <= Phase.boardComplete) && (localStorage.games != "[]"));
+    setVisibility(GameModeForm, (newPhase == Phase.boardComplete) && (localStorage.Boards != "[]"));
+    setVisibility(ExchangeBoardsForm, newPhase == Phase.exchangeBoards);
+    setVisibility(ConfirmExchangeForm, newPhase == Phase.confirmExchange);
+    setVisibility(LoadOpponentForm, newPhase == Phase.localSetup);
+    setVisibility(TurnInterface, (newPhase >= Phase.playerToMove));
+    setVisibility(MoveCodeInputInterface, (Mode.current == Mode.raven) && (newPhase == Phase.awaitingOpponentMove));
+    setVisibility(MoveCodeOutputInterface, ((MoveCodeInputInterface.style.display != "none") && (GameHistory.length > 0)) ||
+                ((Mode.current == Mode.raven) && (newPhase == Phase.gameOver) && (GameHistory[GameHistory.length - 1].color == PlayerColor)));
+    UndoButton.disabled = (GameHistory.length == 0) ||
+                        ((Mode.current != Mode.sandbox) && (newPhase != Phase.playerMoved) && (newPhase != Phase.playerSecondMove));
+    EndTurnButton.disabled = ((Mode.current == Mode.sandbox) && (UndoneHistory.length == 0)) ||
+                        ((Mode.current != Mode.sandbox) && (newPhase != Phase.playerMoved) && (newPhase != Phase.playerSecondMove));
+    ResignButton.disabled = (Mode.current == Mode.raven) && (newPhase == Phase.awaitingOpponentMove);
+    setVisibility(RavenModeFirstMessage, (Mode.current == Mode.raven) && (GameHistory.length == 0) && (newPhase == Phase.playerToMove));
+    setVisibility(RavenModeSecondMessage, (Mode.current == Mode.raven) && (GameHistory.length == 0) && (newPhase == Phase.awaitingOpponentMove));
+    setVisibility(ExitGameInterface, ((newPhase >= Phase.playerToMove) && (newPhase < Phase.gameOver)) || (newPhase == Phase.exchangeBoards) || (newPhase == Phase.confirmExchange));
     setVisibility(SaveGameInterface, false);
     setVisibility(ResignConfirmation, false);
     setVisibility(DeleteGameConfirmation, false);
@@ -56,54 +56,54 @@ function setPhase(newPhase) {
     setVisibility(SaveGameMessage, false);
 
     // update help text
-    if (newPhase in instructions) {
-        HelpText.innerHTML = instructions[newPhase];
+    if (newPhase in Instructions) {
+        HelpText.innerHTML = Instructions[newPhase];
     } else {
         HelpText.innerHTML = "";
     }
 
     // show terrain info during tile placement
-    if (newPhase == phase.placeTiles) {
+    if (newPhase == Phase.placeTiles) {
         setVisibility(MountainInfo, true);
         setVisibility(WaterInfo, true);
     }
 
-    // keep bottomTileArrangement up to date and offer pieces during board setup
-    if (newPhase == phase.placeKing) {
-        if (phase.current == phase.placeTiles) {
-            bottomTileArrangement = getTileArrangement();
+    // keep BottomTileArrangement up to date and offer pieces during board setup
+    if (newPhase == Phase.placeKing) {
+        if (Phase.current == Phase.placeTiles) {
+            BottomTileArrangement = getTileArrangement();
         } else {
-            arrangeTiles(bottomTileArrangement);
+            arrangeTiles(BottomTileArrangement);
         }
         offerKing();
-    } else if ((newPhase == phase.placePieces) && (phase.current == phase.placeKing)) {
-        bottomTileArrangement = getTileArrangement();
+    } else if ((newPhase == Phase.placePieces) && (Phase.current == Phase.placeKing)) {
+        BottomTileArrangement = getTileArrangement();
         offerPieces();
     }
 
-    // keep bottomPieceArrangement up to date
-    if (newPhase == phase.boardComplete) {
-        bottomPieceArrangement = getPieceArrangement();
+    // keep BottomPieceArrangement up to date
+    if (newPhase == Phase.boardComplete) {
+        BottomPieceArrangement = getPieceArrangement();
     }
 
     // display the appropriate mode description
-    if ((newPhase == phase.localSetup) || (newPhase == phase.exchangeBoards) || (newPhase == phase.confirmExchange)) {
-        ModeDescriptionText.innerHTML = modeDescriptions[mode.current];
+    if ((newPhase == Phase.localSetup) || (newPhase == Phase.exchangeBoards) || (newPhase == Phase.confirmExchange)) {
+        ModeDescriptionText.innerHTML = ModeDescriptions[Mode.current];
     } else {
         ModeDescriptionText.innerHTML = "";
     }
 
     // output raven mode codes
-    if (newPhase == phase.exchangeBoards) {
+    if (newPhase == Phase.exchangeBoards) {
         ChallengeCodeInput.value = "";
-        ChallengeCodeOutput.value = encodeBoard(bottomTileArrangement, bottomPieceArrangement, playerRollCode);
+        ChallengeCodeOutput.value = encodeBoard(BottomTileArrangement, BottomPieceArrangement, PlayerRollCode);
         ChallengeCodeOutput.select();
-    } else if (newPhase == phase.confirmExchange) {
-        if (phase.current == phase.exchangeBoards) {
-            opponentChallengeCode = ChallengeCodeInput.value;
+    } else if (newPhase == Phase.confirmExchange) {
+        if (Phase.current == Phase.exchangeBoards) {
+            OpponentChallengeCode = ChallengeCodeInput.value;
         }
         ConfirmationCodeInput.value = "";
-        ConfirmationCodeOutput.value = playerRollCode.toString(16);
+        ConfirmationCodeOutput.value = PlayerRollCode.toString(16);
         ConfirmationCodeOutput.select();
     } else if (MoveCodeOutputInterface.style.display != "none") {
         MoveCodeOutput.value = encodeLatestMove();
@@ -111,8 +111,8 @@ function setPhase(newPhase) {
     }
 
     // display game over message
-    if (newPhase == phase.gameOver) {
-        var lastMove = gameHistory[gameHistory.length - 1];
+    if (newPhase == Phase.gameOver) {
+        var lastMove = GameHistory[GameHistory.length - 1];
         if (lastMove.color != (lastMove.x0 == 12)) {
             GameOverText.innerHTML = "<span style=\"color:white; background-color:black; font-size:20px\"><b>Victory Black!</b></span>";
         } else {
@@ -126,7 +126,7 @@ function setPhase(newPhase) {
     // scroll history to the bottom
     ScrollDiv.scrollTop = ScrollDiv.scrollHeight;
 
-    phase.current = newPhase;
+    Phase.current = newPhase;
     draw();
 }
 
@@ -137,68 +137,68 @@ var tiles = [];
 var kingsTile;
 
 var kingSlots = new Array(3);
-kingSlots[0] = {x: leftMargin + (2.5 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-kingSlots[1] = {x: leftMargin + (4.5 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-kingSlots[2] = {x: leftMargin + (6.5 * squareSize), y: topMargin + (5 * squareSize), tile: null};
+kingSlots[0] = {x: LeftMargin + (2.5 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+kingSlots[1] = {x: LeftMargin + (4.5 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+kingSlots[2] = {x: LeftMargin + (6.5 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
 
 //    left       right
 //  0  1  2  |  0  1  2
 //   3  4  5 | 3  4  5
 
 var leftSlots = new Array(6);
-leftSlots[0] = {x: leftMargin + (0.5 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-leftSlots[1] = {x: leftMargin + (2.5 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-leftSlots[2] = {x: leftMargin + (4.5 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-leftSlots[3] = {x: leftMargin + (1.5 * squareSize), y: topMargin + (7 * squareSize), tile: null};
-leftSlots[4] = {x: leftMargin + (3.5 * squareSize), y: topMargin + (7 * squareSize), tile: null};
-leftSlots[5] = {x: leftMargin + (5.5 * squareSize), y: topMargin + (7 * squareSize), tile: null};
+leftSlots[0] = {x: LeftMargin + (0.5 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+leftSlots[1] = {x: LeftMargin + (2.5 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+leftSlots[2] = {x: LeftMargin + (4.5 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+leftSlots[3] = {x: LeftMargin + (1.5 * SquareSize), y: TopMargin + (7 * SquareSize), tile: null};
+leftSlots[4] = {x: LeftMargin + (3.5 * SquareSize), y: TopMargin + (7 * SquareSize), tile: null};
+leftSlots[5] = {x: LeftMargin + (5.5 * SquareSize), y: TopMargin + (7 * SquareSize), tile: null};
 
 var rightSlots = new Array(6);
-rightSlots[0] = {x: leftMargin + (5 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-rightSlots[1] = {x: leftMargin + (7 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-rightSlots[2] = {x: leftMargin + (9 * squareSize), y: topMargin + (5 * squareSize), tile: null};
-rightSlots[3] = {x: leftMargin + (4 * squareSize), y: topMargin + (7 * squareSize), tile: null};
-rightSlots[4] = {x: leftMargin + (6 * squareSize), y: topMargin + (7 * squareSize), tile: null};
-rightSlots[5] = {x: leftMargin + (8 * squareSize), y: topMargin + (7 * squareSize), tile: null};
+rightSlots[0] = {x: LeftMargin + (5 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+rightSlots[1] = {x: LeftMargin + (7 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+rightSlots[2] = {x: LeftMargin + (9 * SquareSize), y: TopMargin + (5 * SquareSize), tile: null};
+rightSlots[3] = {x: LeftMargin + (4 * SquareSize), y: TopMargin + (7 * SquareSize), tile: null};
+rightSlots[4] = {x: LeftMargin + (6 * SquareSize), y: TopMargin + (7 * SquareSize), tile: null};
+rightSlots[5] = {x: LeftMargin + (8 * SquareSize), y: TopMargin + (7 * SquareSize), tile: null};
 
 // Initialize the tiles array and place the tiles on the divider screen.
 function setUpTiles() {
     tiles = new Array(9);
-    kingsTile = {id: 8, squares: null, rotated: false, x: Math.round(leftMargin + (4.5 * squareSize)),
-                                                    y: Math.round(topMargin + (0.75 * squareSize)), slot: null};
+    kingsTile = {id: 8, squares: null, rotated: false, x: Math.round(LeftMargin + (4.5 * SquareSize)),
+                                                    y: Math.round(TopMargin + (0.75 * SquareSize)), slot: null};
     for (var i = 0; i < 8; ++i) {
         tiles[i] = {id: i, squares: new Array(8), rotated: false, x: 0, y: 0, slot: null};
         for (var j = 0; j < 8; ++j) {
-            tiles[i].squares[j] = terType.open;
+            tiles[i].squares[j] = TerType.open;
         }
     }
     tiles[8] = kingsTile;
 
     // give the tiles their terrain
-    tiles[0].squares[0] = terType.mountain;
-    tiles[0].squares[3] = terType.mountain;
-    tiles[0].squares[5] = terType.mountain;
-    tiles[1].squares[0] = terType.water;
-    tiles[1].squares[1] = terType.water;
-    tiles[1].squares[4] = terType.water;
-    tiles[2].squares[0] = terType.mountain;
-    tiles[2].squares[4] = terType.water;
-    tiles[3].squares[1] = terType.water;
-    tiles[3].squares[5] = terType.mountain;
-    tiles[4].squares[0] = terType.mountain;
-    tiles[5].squares[1] = terType.water;
+    tiles[0].squares[0] = TerType.mountain;
+    tiles[0].squares[3] = TerType.mountain;
+    tiles[0].squares[5] = TerType.mountain;
+    tiles[1].squares[0] = TerType.water;
+    tiles[1].squares[1] = TerType.water;
+    tiles[1].squares[4] = TerType.water;
+    tiles[2].squares[0] = TerType.mountain;
+    tiles[2].squares[4] = TerType.water;
+    tiles[3].squares[1] = TerType.water;
+    tiles[3].squares[5] = TerType.mountain;
+    tiles[4].squares[0] = TerType.mountain;
+    tiles[5].squares[1] = TerType.water;
 
     // position the tiles
-    var y = topMargin + squareSize/6;
-    var x = leftMargin + squareSize/4;
+    var y = TopMargin + SquareSize/6;
+    var x = LeftMargin + SquareSize/4;
     for (var i = 0; i < 8; ++i) {
         tiles[i].x = Math.round(x);
         tiles[i].y = Math.round(y);
-        tiles[i].side = ((x + (1.25 * squareSize)) < (kingsTile.x + (1.5 * squareSize)));
-        x += 3 * squareSize;
+        tiles[i].side = ((x + (1.25 * SquareSize)) < (kingsTile.x + (1.5 * SquareSize)));
+        x += 3 * SquareSize;
         if (i == 3) {
-            y += (13/6) * squareSize;
-            x = leftMargin + squareSize/4;
+            y += (13/6) * SquareSize;
+            x = LeftMargin + SquareSize/4;
         }
     }
 }
@@ -240,21 +240,21 @@ function areTilesArranged() {
 function readTerrainLeftSlot(slot) {
     if (slot.tile != null) {
         var hex = hexAtPos(slot.x, slot.y);
-        board[hexToIndex(hex.x, hex.y)].terrain = slot.tile.squares[0];
-        board[hexToIndex(hex.x + 1, hex.y + 1)].terrain = slot.tile.squares[1];
-        board[hexToIndex(hex.x + 1, hex.y)].terrain = slot.tile.squares[2];
-        board[hexToIndex(hex.x + 2, hex.y + 1)].terrain = slot.tile.squares[3];
+        Board[hexToIndex(hex.x, hex.y)].terrain = slot.tile.squares[0];
+        Board[hexToIndex(hex.x + 1, hex.y + 1)].terrain = slot.tile.squares[1];
+        Board[hexToIndex(hex.x + 1, hex.y)].terrain = slot.tile.squares[2];
+        Board[hexToIndex(hex.x + 2, hex.y + 1)].terrain = slot.tile.squares[3];
     }
 }
 
 // Set the board terrain from the tile in the given right slot.
 function readTerrainRightSlot(slot) {
     if (slot.tile != null) {
-        var hex = hexAtPos(slot.x + squareSize/2, slot.y);
-        board[hexToIndex(hex.x, hex.y)].terrain = slot.tile.squares[4];
-        board[hexToIndex(hex.x + 1, hex.y + 1)].terrain = slot.tile.squares[5];
-        board[hexToIndex(hex.x, hex.y - 1)].terrain = slot.tile.squares[6];
-        board[hexToIndex(hex.x + 1, hex.y)].terrain = slot.tile.squares[7];
+        var hex = hexAtPos(slot.x + SquareSize/2, slot.y);
+        Board[hexToIndex(hex.x, hex.y)].terrain = slot.tile.squares[4];
+        Board[hexToIndex(hex.x + 1, hex.y + 1)].terrain = slot.tile.squares[5];
+        Board[hexToIndex(hex.x, hex.y - 1)].terrain = slot.tile.squares[6];
+        Board[hexToIndex(hex.x + 1, hex.y)].terrain = slot.tile.squares[7];
     }
 }
 
@@ -262,7 +262,7 @@ function readTerrainRightSlot(slot) {
 // assuming the tiles are properly arranged.
 function readTerrainFromTiles() {
     for (var i = 50; i < 88; ++i) {
-        board[i].terrain = terType.open;
+        Board[i].terrain = TerType.open;
     }
     for (var i = 0; i < 6; ++i) {
         readTerrainLeftSlot(leftSlots[i]);
@@ -325,10 +325,10 @@ function arrangeTiles(arrangement) {
     }
     for (var i = 0; i < tiles.length; ++i) {
         if (tiles[i] != kingsTile) {
-            tiles[i].side = ((tiles[i].x + (1.25 * squareSize)) < (kingsTile.x + (1.5 * squareSize)));
+            tiles[i].side = ((tiles[i].x + (1.25 * SquareSize)) < (kingsTile.x + (1.5 * SquareSize)));
         }
     }
-    bottomTileArrangement = arrangement;
+    BottomTileArrangement = arrangement;
     //readTerrainFromTiles();
 }
 
@@ -373,7 +373,7 @@ function matchSlot(tile) {
     var slots = null;
     if (tile == kingsTile) {
         slots = kingSlots;
-    } else if ((tile.x + (1.25 * squareSize)) < (kingsTile.x + (1.5 * squareSize))) {
+    } else if ((tile.x + (1.25 * SquareSize)) < (kingsTile.x + (1.5 * SquareSize))) {
         slots = leftSlots;
     } else {
         slots = rightSlots;
@@ -381,13 +381,13 @@ function matchSlot(tile) {
     for (var i = 0; i < slots.length; ++i) {
         var slot = slots[i];
         if (slot.tile == null) {
-            if (posInBounds(tile.x + squareSize/2, tile.y + squareSize/2, slot.x, slot.y, squareSize, squareSize)) {
+            if (posInBounds(tile.x + SquareSize/2, tile.y + SquareSize/2, slot.x, slot.y, SquareSize, SquareSize)) {
                 insertTile(tile, slot, true);
                 if (kingsTile.slot != null) {
                     if (areTilesArranged()) {
-                        setPhase(phase.placeKing);
+                        setPhase(Phase.placeKing);
                     } else {
-                        setPhase(phase.placeTiles);
+                        setPhase(Phase.placeTiles);
                     }
                 }
                 return true;
@@ -395,8 +395,8 @@ function matchSlot(tile) {
         }
     }
     tile.slot == null;
-    if (phase.current == phase.placeKing) {
-        setPhase(phase.placeTiles);
+    if (Phase.current == Phase.placeKing) {
+        setPhase(Phase.placeTiles);
     }
     return false;
 }
@@ -405,38 +405,38 @@ function matchSlot(tile) {
 // Pieces
 
 function offerKing() {
-    playerPieces = new Array();
-    playerPieces.push({type: pieceType.king, x: 4, y: 7, color: true});
-    board[hexToIndex(4, 7)].piece = playerPieces[0];
-    // kingPiece = playerPieces[0];
+    PlayerPieces = new Array();
+    PlayerPieces.push({type: PieceType.king, x: 4, y: 7, color: true});
+    Board[hexToIndex(4, 7)].piece = PlayerPieces[0];
+    // kingPiece = PlayerPieces[0];
 }
 
 function offerPieces() {
-    playerPieces.push({type: pieceType.rabble, x:1 , y:4, color: true});
-    playerPieces.push({type: pieceType.rabble, x:2 , y:5, color: true});
-    playerPieces.push({type: pieceType.rabble, x:3 , y:6, color: true});
-    playerPieces.push({type: pieceType.rabble, x:4 , y:7, color: true});
-    playerPieces.push({type: pieceType.rabble, x:5 , y:8, color: true});
-    playerPieces.push({type: pieceType.rabble, x:6 , y:9, color: true});
-    playerPieces.push({type: pieceType.spears, x:1 , y:3, color: true});
-    playerPieces.push({type: pieceType.spears, x:2 , y:4, color: true});
-    playerPieces.push({type: pieceType.spears, x:3 , y:5, color: true});
-    playerPieces.push({type: pieceType.lightHorse, x:4 , y:6, color: true});
-    playerPieces.push({type: pieceType.lightHorse, x:5 , y:7, color: true});
-    playerPieces.push({type: pieceType.lightHorse, x:6 , y:8, color: true});
-    playerPieces.push({type: pieceType.heavyHorse, x:7 , y:9, color: true});
-    playerPieces.push({type: pieceType.heavyHorse, x:8 , y:10, color: true});
-    playerPieces.push({type: pieceType.elephant, x:5 , y:6, color: true});
-    playerPieces.push({type: pieceType.elephant, x:6 , y:7, color: true});
-    playerPieces.push({type: pieceType.crossbows, x:2 , y:3, color: true});
-    playerPieces.push({type: pieceType.crossbows, x:3 , y:4, color: true});
-    playerPieces.push({type: pieceType.trebuchet, x:4 , y:5, color: true});
-    playerPieces.push({type: pieceType.dragon, x:7 , y:10, color: true});
-    playerPieces.push({type: pieceType.tower, x:7 , y:8, color: true});
-    playerPieces.push({type: pieceType.tower, x:8 , y:9, color: true});
-    for (var i = 0; i < playerPieces.length; ++i){
-        var piece = playerPieces[i];
-        board[hexToIndex(piece.x, piece.y)].piece = piece;
+    PlayerPieces.push({type: PieceType.rabble, x:1 , y:4, color: true});
+    PlayerPieces.push({type: PieceType.rabble, x:2 , y:5, color: true});
+    PlayerPieces.push({type: PieceType.rabble, x:3 , y:6, color: true});
+    PlayerPieces.push({type: PieceType.rabble, x:4 , y:7, color: true});
+    PlayerPieces.push({type: PieceType.rabble, x:5 , y:8, color: true});
+    PlayerPieces.push({type: PieceType.rabble, x:6 , y:9, color: true});
+    PlayerPieces.push({type: PieceType.spears, x:1 , y:3, color: true});
+    PlayerPieces.push({type: PieceType.spears, x:2 , y:4, color: true});
+    PlayerPieces.push({type: PieceType.spears, x:3 , y:5, color: true});
+    PlayerPieces.push({type: PieceType.lightHorse, x:4 , y:6, color: true});
+    PlayerPieces.push({type: PieceType.lightHorse, x:5 , y:7, color: true});
+    PlayerPieces.push({type: PieceType.lightHorse, x:6 , y:8, color: true});
+    PlayerPieces.push({type: PieceType.heavyHorse, x:7 , y:9, color: true});
+    PlayerPieces.push({type: PieceType.heavyHorse, x:8 , y:10, color: true});
+    PlayerPieces.push({type: PieceType.elephant, x:5 , y:6, color: true});
+    PlayerPieces.push({type: PieceType.elephant, x:6 , y:7, color: true});
+    PlayerPieces.push({type: PieceType.crossbows, x:2 , y:3, color: true});
+    PlayerPieces.push({type: PieceType.crossbows, x:3 , y:4, color: true});
+    PlayerPieces.push({type: PieceType.trebuchet, x:4 , y:5, color: true});
+    PlayerPieces.push({type: PieceType.dragon, x:7 , y:10, color: true});
+    PlayerPieces.push({type: PieceType.tower, x:7 , y:8, color: true});
+    PlayerPieces.push({type: PieceType.tower, x:8 , y:9, color: true});
+    for (var i = 0; i < PlayerPieces.length; ++i){
+        var piece = PlayerPieces[i];
+        Board[hexToIndex(piece.x, piece.y)].piece = piece;
     }
 }
 
@@ -448,8 +448,8 @@ function countPieces() {
         pieceCount[i] = 0;
     }
     for (var i = 50; i < 88; ++i) {
-        if (board[i].piece != null) {
-            ++pieceCount[board[i].piece.type];
+        if (Board[i].piece != null) {
+            ++pieceCount[Board[i].piece.type];
         }
     }
     return pieceCount;
@@ -459,7 +459,7 @@ function countPieces() {
 function arePiecesArranged() {
     var pieceCount = countPieces();
     for (var i = 0; i < 10; ++i) {
-        if (pieceCount[i] != requiredPieceCount[i]) {
+        if (pieceCount[i] != RequiredPieceCount[i]) {
             return false;
         }
     }
@@ -468,9 +468,9 @@ function arePiecesArranged() {
 
 // Return an object representing the arrangement of the player's pieces.
 function getPieceArrangement() {
-    var arrangement = new Array(totalPieceCount);
-    for (var i = 0; i < totalPieceCount; ++i) {
-        arrangement[i] = {type: playerPieces[i].type, x: playerPieces[i].x, y: playerPieces[i].y};
+    var arrangement = new Array(TotalPieceCount);
+    for (var i = 0; i < TotalPieceCount; ++i) {
+        arrangement[i] = {type: PlayerPieces[i].type, x: PlayerPieces[i].x, y: PlayerPieces[i].y};
     }
     return arrangement;
 }
@@ -478,20 +478,20 @@ function getPieceArrangement() {
 // Arrange the player's pieces according to the given piece arrangement object.
 function arrangePieces(arrangement) {
     clearBoardOfPieces();
-    playerPieces = new Array(totalPieceCount);
-    for (var i = 0; i < totalPieceCount; ++i) {
-        var piece = {type: arrangement[i].type, x: arrangement[i].x, y: arrangement[i].y, color: playerColor};
-        playerPieces[i] = piece;
-        board[hexToIndex(piece.x, piece.y)].piece = playerPieces[i];
+    PlayerPieces = new Array(TotalPieceCount);
+    for (var i = 0; i < TotalPieceCount; ++i) {
+        var piece = {type: arrangement[i].type, x: arrangement[i].x, y: arrangement[i].y, color: PlayerColor};
+        PlayerPieces[i] = piece;
+        Board[hexToIndex(piece.x, piece.y)].piece = PlayerPieces[i];
     }
-    bottomPieceArrangement = arrangement
+    BottomPieceArrangement = arrangement
 }
 
 // Removes the pieces from the board. Doesn't change the location of the
 // pieces.
 function clearBoardOfPieces() {
     for (var i = 50; i < 88; ++i) {
-        board[i].piece = null;
+        Board[i].piece = null;
     }
 }
 
@@ -500,42 +500,42 @@ function clearBoardOfPieces() {
 function placePiece(piece, x, y) {
 
     // handle placement of the king, which can only go on the king's square
-    if (piece.type == pieceType.king) {
+    if (piece.type == PieceType.king) {
         var kingSquare = kingSlots.indexOf(kingsTile.slot);
         if ((x == 5 + (2 * kingSquare)) && (y == 2 + (2 * kingSquare))) {
             piece.x = x;
             piece.y = y;
-            board[73 + (2 * kingSquare)].piece = piece;
-            if (phase.current != phase.boardComplete) {
-                setPhase(phase.placePieces);
+            Board[73 + (2 * kingSquare)].piece = piece;
+            if (Phase.current != Phase.boardComplete) {
+                setPhase(Phase.placePieces);
             }
             readTerrainFromTiles();
         } else {
             for (var i = 0; i < 88; ++i) {
-                board[i].piece = null;
+                Board[i].piece = null;
             }
-            setPhase(phase.placeKing);
+            setPhase(Phase.placeKing);
         }
 
     } else if ((hexInBounds(x, y)) && (hexToIndex(x, y) >= 50)) {
-        var square = board[hexToIndex(x, y)];
-        if (square.terrain != terType.mountain) {
+        var square = Board[hexToIndex(x, y)];
+        if (square.terrain != TerType.mountain) {
 
             // if there is already a piece here, swap the pieces
             if (square.piece != null) {
-                if (square.piece.type == pieceType.king) {
+                if (square.piece.type == PieceType.king) {
                     return;
                 }
                 square.piece.x = piece.x;
                 square.piece.y = piece.y;
             }
 
-            board[hexToIndex(piece.x, piece.y)].piece = square.piece;
+            Board[hexToIndex(piece.x, piece.y)].piece = square.piece;
             piece.x = x;
             piece.y = y;
             square.piece = piece;
             if (arePiecesArranged()) {
-                setPhase(phase.boardComplete);
+                setPhase(Phase.boardComplete);
             }
         }
     }
@@ -543,70 +543,70 @@ function placePiece(piece, x, y) {
 
 function randomizePieceArrangement() {
     clearBoardOfPieces();
-    for (var i = 0; i < playerPieces.length; ++i) {
-        var piece = playerPieces[i];
-        if (piece.type == pieceType.king) {
+    for (var i = 0; i < PlayerPieces.length; ++i) {
+        var piece = PlayerPieces[i];
+        if (piece.type == PieceType.king) {
             var kingSquare = kingSlots.indexOf(kingsTile.slot);
             piece.x = 5 + (2 * kingSquare);
             piece.y = 2 + (2 * kingSquare);
-            board[73 + (2 * kingSquare)].piece = piece;
+            Board[73 + (2 * kingSquare)].piece = piece;
             break;
         }
     }
-    for (var i = 0; i < playerPieces.length; ++i) {
-        var piece = playerPieces[i];
-        if (piece.type != pieceType.king) {
+    for (var i = 0; i < PlayerPieces.length; ++i) {
+        var piece = PlayerPieces[i];
+        if (piece.type != PieceType.king) {
             var boardIndex;
             do {
                 boardIndex = Math.floor(Math.random() * 38) + 50;
-            } while ((board[boardIndex].piece != null) || (board[boardIndex].terrain == terType.mountain));
+            } while ((Board[boardIndex].piece != null) || (Board[boardIndex].terrain == TerType.mountain));
             var hex = indexToHex(boardIndex);
             piece.x = hex.x;
             piece.y = hex.y;
-            board[boardIndex].piece = playerPieces[i];
+            Board[boardIndex].piece = PlayerPieces[i];
         }
     }
-    setPhase(phase.boardComplete);
+    setPhase(Phase.boardComplete);
     draw();
 }
 
 
 // Turns
 
-// Set playerRollCode to a random roll code.
+// Set PlayerRollCode to a random roll code.
 function rollInitiative() {
-    playerRollCode = Math.floor(Math.random() * Math.pow(2, rollsize)).toString(16);
-    while (playerRollCode.length < rollsize / 4) {
-        playerRollCode = "0" + playerRollCode;
+    PlayerRollCode = Math.floor(Math.random() * Math.pow(2, RollSize)).toString(16);
+    while (PlayerRollCode.length < RollSize / 4) {
+        PlayerRollCode = "0" + PlayerRollCode;
     }
 }
 
 // Determing whether the player has initiative based on his and his oppoent's
 // rolls. Every role has an even chance versus a random roll. 
 function determineInitiative() {
-    var playerInitiativeRoll = parseInt(playerRollCode, 16);
-    var opponentInitiativeRoll = parseInt(opponentRollCode, 16);
-    var modSum = (playerInitiativeRoll + opponentInitiativeRoll) % Math.pow(2, rollsize);
+    var playerInitiativeRoll = parseInt(PlayerRollCode, 16);
+    var opponentInitiativeRoll = parseInt(OpponentRollCode, 16);
+    var modSum = (playerInitiativeRoll + opponentInitiativeRoll) % Math.pow(2, RollSize);
     return Math.abs(modSum - playerInitiativeRoll) < Math.abs(modSum - opponentInitiativeRoll);
 }
 
 // Reverse control of the pieces.
 function switchPlayer() {
-    var originalPlayerPieces = playerPieces;
-    playerPieces = opponentPieces;
-    opponentPieces = originalPlayerPieces;
-    playerColor = !playerColor;
+    var originalPlayerPieces = PlayerPieces;
+    PlayerPieces = OpponentPieces;
+    OpponentPieces = originalPlayerPieces;
+    PlayerColor = !PlayerColor;
 }
 
-// Set playerColor to the given color, and color all the pieces in playerPieces
-// and opponentPieces accordingly.
+// Set PlayerColor to the given color, and color all the pieces in PlayerPieces
+// and OpponentPieces accordingly.
 function setPlayerColor(color) {
-    playerColor = color;
-    for (var i = 0; i < playerPieces.length; ++i) {
-        playerPieces[i].color = color;
+    PlayerColor = color;
+    for (var i = 0; i < PlayerPieces.length; ++i) {
+        PlayerPieces[i].color = color;
     }
-    for (var i = 0; i < opponentPieces.length; ++i) {
-        opponentPieces[i].color = !color;
+    for (var i = 0; i < OpponentPieces.length; ++i) {
+        OpponentPieces[i].color = !color;
     }
 }
 
@@ -632,14 +632,14 @@ function identicalMoves(move1, move2) {
 // a move object that can be passed to executeMove().
 function reconstructDecodedMove(move) {
     if ((move.x0 == 12) || (move.x0 == -1)) {
-        return {x0: 12, y0: 12, x1: 12, y1: 12, color: !playerColor};
+        return {x0: 12, y0: 12, x1: 12, y1: 12, color: !PlayerColor};
     }
-    var piece = getItemAtHex(opponentPieces, move.x0, move.y0);
+    var piece = getItemAtHex(OpponentPieces, move.x0, move.y0);
     if (piece == null) {
         return null;
     }
     move.type = piece.type;
-    move.color = !playerColor;
+    move.color = !PlayerColor;
     var normalMoves = getMoves(piece);
     var captures = getCaptures(piece);
     if (containsHex(captures, move.x1, move.y1)) {
@@ -659,106 +659,106 @@ function reconstructDecodedMove(move) {
 // Update the board state, history, and phase according to the given move.
 function executeMove(move) {
 
-    //handle resignation
+    // handle resignation
     if (move.x0 == 12) {
-        gameHistory.push(move);
+        GameHistory.push(move);
         updateLogs();
-        setPhase(phase.gameOver);
+        setPhase(Phase.gameOver);
         return;
     }
 
-    //modify the board and pieces
-    var pieces = (move.color == playerColor ? playerPieces : opponentPieces);
+    // modify the board and pieces
+    var pieces = (move.color == PlayerColor ? PlayerPieces : OpponentPieces);
     var piece = getItemAtHex(pieces, move.x0, move.y0);
     if (move.capture) {
-        var enemyPieces = (move.color == playerColor ? opponentPieces : playerPieces);
+        var enemyPieces = (move.color == PlayerColor ? OpponentPieces : PlayerPieces);
         var enemyPiece = getItemAtHex(enemyPieces, move.x2, move.y2);
         enemyPieces.splice(enemyPieces.indexOf(enemyPiece), 1);
-        board[hexToIndex(move.x2, move.y2)].piece = null;
+        Board[hexToIndex(move.x2, move.y2)].piece = null;
     }
     piece.x = move.x1;
     piece.y = move.y1;
-    board[hexToIndex(move.x0, move.y0)].piece = null;
-    board[hexToIndex(move.x1, move.y1)].piece = piece;
+    Board[hexToIndex(move.x0, move.y0)].piece = null;
+    Board[hexToIndex(move.x1, move.y1)].piece = piece;
 
-    //update history
-    gameHistory.push(move);
-    if (mode.current == mode.sandbox) {
-        if ((undoneHistory.length != 0) && (identicalMoves(undoneHistory[0], move))) {
-            undoneHistory.splice(0, 1);
+    // update history
+    GameHistory.push(move);
+    if (Mode.current == Mode.sandbox) {
+        if ((UndoneHistory.length != 0) && (identicalMoves(UndoneHistory[0], move))) {
+            UndoneHistory.splice(0, 1);
         } else {
-            undoneHistory = new Array();
+            UndoneHistory = new Array();
         }
     }
     updateLogs();
 
-    //animate
-    if (mode.current != mode.setup) {
+    // animate
+    if (Mode.current != Mode.setup) {
         animateMove(move);
     }
 
     updateKingThreats();
 
-    //determine next phase
-    if (mode.current == mode.sandbox) {
-        setPhase(phase.playerToMove);
-    } else if ((phase.current == phase.awaitingOpponentMove) && move.capture && (move.capType == pieceType.king)) {
-        setPhase(phase.gameOver);
-    } else if ((mode.current == mode.raven) && (move.color != playerColor)) {
-        setPhase(phase.playerToMove);
-    } else if (mode.current != mode.setup) {
-        if ((phase.current == phase.playerToMove) &&
-            doubleMovement[move.type] &&
+    // determine next phase
+    if (Mode.current == Mode.sandbox) {
+        setPhase(Phase.playerToMove);
+    } else if ((Phase.current == Phase.awaitingOpponentMove) && move.capture && (move.capType == PieceType.king)) {
+        setPhase(Phase.gameOver);
+    } else if ((Mode.current == Mode.raven) && (move.color != PlayerColor)) {
+        setPhase(Phase.playerToMove);
+    } else if (Mode.current != Mode.setup) {
+        if ((Phase.current == Phase.playerToMove) &&
+            DoubleMovement[move.type] &&
             !(move.capture) &&
             (hexDistance(move.x0, move.y0, move.x1, move.y1) == 1)) {
 
-            setPhase(phase.playerSecondMove);
+            setPhase(Phase.playerSecondMove);
         } else {
-            setPhase(phase.playerMoved);
+            setPhase(Phase.playerMoved);
         }
     }
 }
 
-// Reverse the execution of the last move in gameHistory.
+// Reverse the execution of the last move in GameHistory.
 function undoLastMove() {
-    var move = gameHistory.pop();
-    var pieces = (playerColor == move.color ? playerPieces : opponentPieces);
+    var move = GameHistory.pop();
+    var pieces = (PlayerColor == move.color ? PlayerPieces : OpponentPieces);
     var piece = getItemAtHex(pieces, move.x1, move.y1);
 
     // revert move
     piece.x = move.x0;
     piece.y = move.y0;
-    board[hexToIndex(move.x0, move.y0)].piece = piece;
-    board[hexToIndex(move.x1, move.y1)].piece = null;
+    Board[hexToIndex(move.x0, move.y0)].piece = piece;
+    Board[hexToIndex(move.x1, move.y1)].piece = null;
     if (move.capture) {
-        var enemyPieces = (playerColor == move.color ? opponentPieces : playerPieces);
+        var enemyPieces = (PlayerColor == move.color ? OpponentPieces : PlayerPieces);
         var capturedPiece = {type: move.capType, x: move.x2 , y: move.y2, color: !(move.color)};
         enemyPieces.push(capturedPiece);
-        board[hexToIndex(move.x2, move.y2)].piece = capturedPiece;
+        Board[hexToIndex(move.x2, move.y2)].piece = capturedPiece;
     }
 
     updateKingThreats();
 
     // determine phase and update history
-    if (mode.current == mode.sandbox) {
-        undoneHistory.splice(0, 0, move);
-        setPhase(phase.playerToMove);
-    } else if ((mode.current == mode.raven) && (move.color != playerColor)) {
-        setPhase(phase.awaitingOpponentMove);
+    if (Mode.current == Mode.sandbox) {
+        UndoneHistory.splice(0, 0, move);
+        setPhase(Phase.playerToMove);
+    } else if ((Mode.current == Mode.raven) && (move.color != PlayerColor)) {
+        setPhase(Phase.awaitingOpponentMove);
     } else {
-        if ((gameHistory.length > 0) && (move.color == gameHistory[gameHistory.length - 1].color)) {
-            setPhase(phase.playerSecondMove);
+        if ((GameHistory.length > 0) && (move.color == GameHistory[GameHistory.length - 1].color)) {
+            setPhase(Phase.playerSecondMove);
         } else {
-            setPhase(phase.playerToMove);
+            setPhase(Phase.playerToMove);
         }
     }
     updateLogs();
 }
 
-// Reverse the coordinates of every move in gameHistory and undoneHistory.
+// Reverse the coordinates of every move in GameHistory and UndoneHistory.
 function reverseHistory() {
-    for (var i = 0; i < gameHistory.length; ++i) {
-        var move = gameHistory[i];
+    for (var i = 0; i < GameHistory.length; ++i) {
+        var move = GameHistory[i];
         move.x0 = 11 - move.x0;
         move.y0 = 11 - move.y0;
         move.x1 = 11 - move.x1;
@@ -768,8 +768,8 @@ function reverseHistory() {
             move.y2 = 11 - move.y2;
         }
     }
-    for (var i = 0; i < undoneHistory.length; ++i) {
-        var move = undoneHistory[i];
+    for (var i = 0; i < UndoneHistory.length; ++i) {
+        var move = UndoneHistory[i];
         move.x0 = 11 - move.x0;
         move.y0 = 11 - move.y0;
         move.x1 = 11 - move.x1;
@@ -784,33 +784,33 @@ function reverseHistory() {
 // Rotate the board top-to-bottom.
 function reverseBoard() {
     for (var i = 0; i < 44; ++i) {
-        var squareOne = board[i];
-        var squareTwo = board[87 - i];
-        board[i] = squareTwo;
-        board[87 - i] = squareOne;
+        var squareOne = Board[i];
+        var squareTwo = Board[87 - i];
+        Board[i] = squareTwo;
+        Board[87 - i] = squareOne;
     }
-    for (var i = 0; i < playerPieces.length; ++i) {
-        var piece = playerPieces[i];
+    for (var i = 0; i < PlayerPieces.length; ++i) {
+        var piece = PlayerPieces[i];
         piece.x = 11 - piece.x;
         piece.y = 11 - piece.y;
     }
-    for (var i = 0; i < opponentPieces.length; ++i) {
-        var piece = opponentPieces[i];
+    for (var i = 0; i < OpponentPieces.length; ++i) {
+        var piece = OpponentPieces[i];
         piece.x = 11 - piece.x;
         piece.y = 11 - piece.y;
     }
 
-    newBottomTileArrangement = topTileArrangement;
-    newBottomPieceArrangement = topPieceArrangement;
+    newBottomTileArrangement = TopTileArrangement;
+    newBottomPieceArrangement = TopPieceArrangement;
 
-    topTileArrangement = bottomTileArrangement;
-    topPieceArrangement = bottomPieceArrangement;
+    TopTileArrangement = BottomTileArrangement;
+    TopPieceArrangement = BottomPieceArrangement;
 
-    bottomTileArrangement = newBottomTileArrangement;
-    bottomPieceArrangement = newBottomPieceArrangement
+    BottomTileArrangement = newBottomTileArrangement;
+    BottomPieceArrangement = newBottomPieceArrangement
 
     switchPlayer();
-    topColor = !topColor;
+    TopColor = !TopColor;
 
     updateKingThreats();
 }
@@ -821,21 +821,21 @@ function reverseBoard() {
 // Get everything off the board.
 function wipeBoard() {
     for (var i = 0; i < 88; ++i) {
-        board[i] = {piece: null, terrain: terType.open};
+        Board[i] = {piece: null, terrain: TerType.open};
     }
-    playerPieces = [];
-    opponentPieces = [];
-    playerColor = true;
-    topColor = false;
-    showMoves = [];
-    showCaptures = [];
-    gameHistory = [];
-    undoneHistory = [];
+    PlayerPieces = [];
+    OpponentPieces = [];
+    PlayerColor = true;
+    TopColor = false;
+    ShowMoves = [];
+    ShowCaptures = [];
+    GameHistory = [];
+    UndoneHistory = [];
     updateLogs();
-    topTileArrangement = null;
-    bottomTileArrangement = null;
-    topPieceArrangement = null;
-    bottomPieceArrangement = null;
+    TopTileArrangement = null;
+    BottomTileArrangement = null;
+    TopPieceArrangement = null;
+    BottomPieceArrangement = null;
     clearSlots();
 }
 
@@ -843,30 +843,30 @@ function wipeBoard() {
 // of the pieces is not recorded. Instead, each player's board setup and the
 // game history are recorded.
 function getGameState() {
-    if (phase.current < phase.placeKing) {
+    if (Phase.current < Phase.placeKing) {
         return null;
     }
-    if (mode.current == mode.setup) {
-        if (phase.current >= phase.placePieces) {
-            bottomPieceArrangement = getPieceArrangement();
+    if (Mode.current == Mode.setup) {
+        if (Phase.current >= Phase.placePieces) {
+            BottomPieceArrangement = getPieceArrangement();
         } else {
-            bottomPieceArrangement = null;
+            BottomPieceArrangement = null;
         }
     }
     var gameState = {
-        mode: mode.current,
-        phase: phase.current,
-        topColor: topColor,
-        topTileArrangement: topTileArrangement,
-        bottomTileArrangement: bottomTileArrangement,
-        topPieceArrangement: topPieceArrangement,
-        bottomPieceArrangement: bottomPieceArrangement,
-        gameHistory: gameHistory,
-        undoneHistory: undoneHistory
+        Mode: Mode.current,
+        Phase: Phase.current,
+        TopColor: TopColor,
+        TopTileArrangement: TopTileArrangement,
+        BottomTileArrangement: BottomTileArrangement,
+        TopPieceArrangement: TopPieceArrangement,
+        BottomPieceArrangement: BottomPieceArrangement,
+        GameHistory: GameHistory,
+        UndoneHistory: UndoneHistory
     };
-    if (mode.current == mode.raven) {
-        gameState.playerRollCode = playerRollCode;
-        gameState.opponentRollCode = opponentRollCode;
+    if (Mode.current == Mode.raven) {
+        gameState.PlayerRollCode = PlayerRollCode;
+        gameState.OpponentRollCode = OpponentRollCode;
     }
     return gameState;
 }
@@ -875,61 +875,61 @@ function getGameState() {
 function restoreGameState(gameState) {
 
     if (gameState == null) {
-        setPhase(phase.placeKingsTile);
+        setPhase(Phase.placeKingsTile);
         return;
     }
 
-    if (gameState.mode == mode.raven) {
-        playerRollCode = gameState.playerRollCode;
-        opponentRollCode = gameState.opponentRollCode;
+    if (gameState.Mode == Mode.raven) {
+        PlayerRollCode = gameState.PlayerRollCode;
+        OpponentRollCode = gameState.OpponentRollCode;
     }
 
-    if (gameState.phase < phase.playerToMove) {
+    if (gameState.Phase < Phase.playerToMove) {
 
-        topColor = gameState.topColor;
-        playerColor = !topColor;
+        TopColor = gameState.TopColor;
+        PlayerColor = !TopColor;
 
-        if (gameState.bottomTileArrangement != null) {
-            arrangeTiles(gameState.bottomTileArrangement);
-            if (gameState.bottomPieceArrangement != null) {
-                arrangePieces(gameState.bottomPieceArrangement);
+        if (gameState.BottomTileArrangement != null) {
+            arrangeTiles(gameState.BottomTileArrangement);
+            if (gameState.BottomPieceArrangement != null) {
+                arrangePieces(gameState.BottomPieceArrangement);
             }
         }
         
     } else {
 
-        topColor = !gameState.topColor;
-        playerColor = !topColor;
+        TopColor = !gameState.TopColor;
+        PlayerColor = !TopColor;
 
         clearSlots();
         clearBoardOfPieces();
-        arrangeTiles(gameState.topTileArrangement);
+        arrangeTiles(gameState.TopTileArrangement);
         readTerrainFromTiles();
-        arrangePieces(gameState.topPieceArrangement);
+        arrangePieces(gameState.TopPieceArrangement);
         reverseBoard();
-        arrangeTiles(gameState.bottomTileArrangement);
+        arrangeTiles(gameState.BottomTileArrangement);
         readTerrainFromTiles();
-        arrangePieces(gameState.bottomPieceArrangement);
+        arrangePieces(gameState.BottomPieceArrangement);
 
         // play out the game according to the history
-        for (moveCount = 0; moveCount < gameState.gameHistory.length; ++moveCount) {
-            executeMove(gameState.gameHistory[moveCount]);
+        for (moveCount = 0; moveCount < gameState.GameHistory.length; ++moveCount) {
+            executeMove(gameState.GameHistory[moveCount]);
         }
 
-        undoneHistory = gameState.undoneHistory;
+        UndoneHistory = gameState.UndoneHistory;
 
     }
 
-    setMode(gameState.mode);
-    setPhase(gameState.phase);
+    setMode(gameState.Mode);
+    setPhase(gameState.Phase);
     
     updateLogs();
 }
 
 // Forget the current game and return to the setup phases.
 function leaveGame() {
-    setMode(mode.setup);
+    setMode(Mode.setup);
     wipeBoard();
     setUpTiles();
-    setPhase(phase.placeKingsTile);
+    setPhase(Phase.placeKingsTile);
 }
