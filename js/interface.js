@@ -1,11 +1,11 @@
 // Display the info of the given piece in the PieceInfo element.
 function showPieceInfo(piece) {
-    displayedPiece = piece;
+    DisplayedPiece = piece;
     if (piece == null) {
         setVisibility(PieceInfo, false);
     } else {
-        PieceInfoImage.src = pieceArt[piece.type + (10 * piece.color)].src;
-        PieceInfoText.innerHTML = pieceText[piece.type];
+        PieceInfoImage.src = PieceArt[piece.type + (10 * piece.color)].src;
+        PieceInfoText.innerHTML = PieceText[piece.type];
         setVisibility(PieceInfo, true);
     }
 }
@@ -13,12 +13,12 @@ function showPieceInfo(piece) {
 // Display the info of the given terrain type in the PieceInfo element.
 function showTerrainInfo(hex) {
     if (hexInBounds(hex.x, hex.y)) {
-        var terrain = board[hexToIndex(hex.x, hex.y)].terrain;
-        if (terrain == terType.mountain) {
+        var terrain = Board[hexToIndex(hex.x, hex.y)].terrain;
+        if (terrain == TerType.mountain) {
             setVisibility(MountainInfo, true);
             setVisibility(WaterInfo, false);
             return;
-        } else if (terrain == terType.water) {
+        } else if (terrain == TerType.water) {
             setVisibility(MountainInfo, false);
             setVisibility(WaterInfo, true);
             return;
@@ -41,7 +41,7 @@ SaveBoardButton.onclick = function() {
         OpponentSelect.innerHTML += "<option>" + name + "</option>";
         SaveBoardName.value = "";
         setVisibility(LoadBoardForm, true);
-        setPhase(phase.current); // to show the forms that require a save to exist
+        setPhase(Phase.current); // to show the forms that require a save to exist
         SaveBoardMessage.innerHTML = name + " saved.";
     } else {
         SaveBoardMessage.innerHTML = "Failed to save board.";
@@ -51,13 +51,13 @@ SaveBoardButton.onclick = function() {
 
 LoadBoardButton.onclick = function() {
     for (var i = 0; i < 38; ++i) {
-        board[i].piece = null;
+        Board[i].piece = null;
     }
     var savedBoard = JSON.parse(localStorage.boards)[LoadBoardSelect.selectedIndex];
     arrangeTiles(savedBoard.tiles);
     readTerrainFromTiles();
     arrangePieces(savedBoard.pieces);
-    setPhase(phase.boardComplete);
+    setPhase(Phase.boardComplete);
     draw();
 };
 
@@ -74,7 +74,7 @@ ConfirmDeleteBoardButton.onclick = function() {
     localStorage.boards = JSON.stringify(boards);
     LoadBoardSelect.remove(index);
     OpponentSelect.remove(index);
-    setPhase(phase.current); // to hide the forms that require a save to exist
+    setPhase(Phase.current); // to hide the forms that require a save to exist
 };
 
 CancelDeleteBoardButton.onclick = function() {
@@ -94,23 +94,23 @@ function arrangeOpponent(tileArrangement, pieceArrangement) {
 
 LoadOpponentButton.onclick = function() {
     var index = OpponentSelect.selectedIndex;
-    var board = (JSON.parse(localStorage.boards))[index];
-    arrangeOpponent(board.tiles, board.pieces);
+    var opponentBoard = (JSON.parse(localStorage.boards))[index];
+    arrangeOpponent(opponentBoard.tiles, opponentBoard.pieces);
     animateScreen();
-    setPhase(phase.playerToMove);
+    setPhase(Phase.playerToMove);
 };
 
 ConfirmExchangeDoneButton.onclick = function() {
-    opponentRollCode = ConfirmationCodeInput.value;
-    var opponentBoard = decodeBoard(opponentChallengeCode, opponentRollCode);
+    OpponentRollCode = ConfirmationCodeInput.value;
+    var opponentBoard = decodeBoard(OpponentChallengeCode, OpponentRollCode);
     if (determineInitiative()) {
         setPlayerColor(false);
-        topColor = true;
-        setPhase(phase.playerToMove);
+        TopColor = true;
+        setPhase(Phase.playerToMove);
     } else {
         setPlayerColor(true);
-        topColor = false;
-        setPhase(phase.awaitingOpponentMove);
+        TopColor = false;
+        setPhase(Phase.awaitingOpponentMove);
     }
     animateScreen();
     arrangeOpponent(opponentBoard.tileArrangement, opponentBoard.pieceArrangement);
@@ -126,27 +126,27 @@ function XToChar(x) {
 }
 
 // Convert a piece type to a string of its name.
-function pieceTypeToString(type) {
+function PieceTypeToString(type) {
     switch(type) {
-    case pieceType.rabble:
+    case PieceType.rabble:
         return "Rabble";
-    case pieceType.spears:
+    case PieceType.spears:
         return "Spears";
-    case pieceType.lightHorse:
+    case PieceType.lightHorse:
         return "Light Horse";
-    case pieceType.heavyHorse:
+    case PieceType.heavyHorse:
         return "Heavy Horse";
-    case pieceType.elephant:
+    case PieceType.elephant:
         return "Elephant";
-    case pieceType.crossbows:
+    case PieceType.crossbows:
         return "Crossbows";
-    case pieceType.trebuchet:
+    case PieceType.trebuchet:
         return "Trebuchet";
-    case pieceType.dragon:
+    case PieceType.dragon:
         return "Dragon";
-    case pieceType.tower:
+    case PieceType.tower:
         return "Tower";
-    case pieceType.king:
+    case PieceType.king:
         return "King";
     }
     return "????";
@@ -162,10 +162,10 @@ function moveToString(move) {
         }
     }
     var string = "";
-    string += pieceTypeToString(move.type) + " ";
+    string += PieceTypeToString(move.type) + " ";
     string += XToChar(move.x0) + (move.y0 + 1) + " to " + XToChar(move.x1) + (move.y1 + 1);
     if (move.capture) {
-        string += " (" + pieceTypeToString(move.capType) + " " + XToChar(move.x2) + (move.y2 + 1) + ")";
+        string += " (" + PieceTypeToString(move.capType) + " " + XToChar(move.x2) + (move.y2 + 1) + ")";
     }
     return string;
 }
@@ -199,39 +199,39 @@ function updateLog(log, history) {
 }
 
 
-// Update GameLog and UndoneLog to reflect gameHistory and undoneHistory
+// Update GameLog and UndoneLog to reflect GameHistory and UndoneHistory
 // respectively.
 function updateLogs() {
     turnCount = 1;
-    updateLog(GameLog, gameHistory);
-    updateLog(UndoneLog, undoneHistory);
+    updateLog(GameLog, GameHistory);
+    updateLog(UndoneLog, UndoneHistory);
     TurnInterface.scrollTop = TurnInterface.scrollHeight;
 }
 
 EndTurnButton.onclick = function() {
-    switch(mode.current) {
-    case mode.hotseat:
-        if ((gameHistory[gameHistory.length - 1].capture) && (gameHistory[gameHistory.length - 1].capType == pieceType.king)) {
-            setPhase(phase.gameOver);
+    switch(Mode.current) {
+    case Mode.hotseat:
+        if ((GameHistory[GameHistory.length - 1].capture) && (GameHistory[GameHistory.length - 1].capType == PieceType.king)) {
+            setPhase(Phase.gameOver);
         } else {
             reverseBoard();
             reverseHistory();
             updateLogs();
-            setPhase(phase.playerToMove);
+            setPhase(Phase.playerToMove);
         }
         draw();
         break;
-    case mode.sandbox:
-        executeMove(undoneHistory[0]);
+    case Mode.sandbox:
+        executeMove(UndoneHistory[0]);
         updateLogs();
-        setPhase(phase.playerToMove);
+        setPhase(Phase.playerToMove);
         break;
-    case mode.raven:
+    case Mode.raven:
         updateLogs();
-        if ((gameHistory[gameHistory.length - 1].capture) && (gameHistory[gameHistory.length - 1].capType == pieceType.king)) {
-            setPhase(phase.gameOver);
+        if ((GameHistory[GameHistory.length - 1].capture) && (GameHistory[GameHistory.length - 1].capType == PieceType.king)) {
+            setPhase(Phase.gameOver);
         } else {
-            setPhase(phase.awaitingOpponentMove);
+            setPhase(Phase.awaitingOpponentMove);
         }
         draw();
         break;
@@ -246,12 +246,12 @@ MoveCodeDoneButton.onclick = function() {
     var moveCode = MoveCodeInput.value;
     MoveCodeInput.value = "";
     if (moveCode.length == 4) {
-        var move = reconstructDecodedMove(decodeMove(moveCode, encodeTurn(gameHistory.length + 1), opponentRollCode));
+        var move = reconstructDecodedMove(decodeMove(moveCode, encodeTurn(GameHistory.length + 1), OpponentRollCode));
         if (move != null) {
             executeMove(move);
         }
     } else if (moveCode.length == 8) {
-        var moves = decodeDoubleMove(moveCode, encodeTurn(gameHistory.length + 2), opponentRollCode);
+        var moves = decodeDoubleMove(moveCode, encodeTurn(GameHistory.length + 2), OpponentRollCode);
         var move1 = reconstructDecodedMove(moves.move1);
         if (move1 != null) {
             executeMove(move1);
@@ -316,7 +316,7 @@ ConfirmDeleteGameButton.onclick = function() {
     games.splice(index, 1);
     localStorage.games = JSON.stringify(games);
     LoadGameSelect.remove(index);
-    setPhase(phase.current); // to hide the forms that require a save to exist
+    setPhase(Phase.current); // to hide the forms that require a save to exist
 };
 
 CancelDeleteGameButton.onclick = function() {
@@ -325,10 +325,10 @@ CancelDeleteGameButton.onclick = function() {
 };
 
 ResignButton.onclick = function() {
-    if ((phase.current == phase.exchangeBoards) || (phase.current == phase.confirmExchange)) {
-        setMode(mode.setup);
-        setPhase(phase.boardComplete);
-    } else if (mode.current == mode.sandbox) {
+    if ((Phase.current == Phase.exchangeBoards) || (Phase.current == Phase.confirmExchange)) {
+        setMode(Mode.setup);
+        setPhase(Phase.boardComplete);
+    } else if (Mode.current == Mode.sandbox) {
         leaveGame();
     } else {
         setVisibility(ExitGameInterface, false);
@@ -337,7 +337,7 @@ ResignButton.onclick = function() {
 }
 
 ConfirmResignButton.onclick = function() {
-    executeMove({x0: 12, y0: 12, x1: 12, y1: 12, color: playerColor});
+    executeMove({x0: 12, y0: 12, x1: 12, y1: 12, color: PlayerColor});
 };
 
 CancelResignButton.onclick = function() {
@@ -350,37 +350,37 @@ GameOverExitButton.onclick = function() {
 };
 
 GameOverSandboxButton.onclick = function() {
-    if (gameHistory[gameHistory.length - 1].x0 == 12) {
-        gameHistory.pop();
+    if (GameHistory[GameHistory.length - 1].x0 == 12) {
+        GameHistory.pop();
     }
-    setMode(mode.sandbox);
-    setPhase(phase.playerToMove);
+    setMode(Mode.sandbox);
+    setPhase(Phase.playerToMove);
 };
 
 
 // Game Modes
 
 HotseatButton.onclick = function() {
-    setMode(mode.hotseat);
-    setPhase(phase.localSetup);
+    setMode(Mode.hotseat);
+    setPhase(Phase.localSetup);
 };
 
 SandboxButton.onclick = function() {
-    setMode(mode.sandbox);
-    setPhase(phase.localSetup);
+    setMode(Mode.sandbox);
+    setPhase(Phase.localSetup);
 };
 
 RavenButton.onclick = function() {
     rollInitiative();
-    setMode(mode.raven);
-    setPhase(phase.exchangeBoards);
+    setMode(Mode.raven);
+    setPhase(Phase.exchangeBoards);
 };
 
 ExchangeBoardsDoneButton.onclick = function() {
-    setPhase(phase.confirmExchange);
+    setPhase(Phase.confirmExchange);
 };
 
 LoadOpponentBackButton.onclick = function() {
-    setMode(mode.setup);
-    setPhase(phase.boardComplete);
+    setMode(Mode.setup);
+    setPhase(Phase.boardComplete);
 };

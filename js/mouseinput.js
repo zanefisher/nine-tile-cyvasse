@@ -9,9 +9,6 @@ var grabX = 0;
 var grabY = 0;
 var moved = false;
 
-var showMoves = [];
-var showCaptures = [];
-
 var lastFrame = (new Date()).getTime();
 
 // Determine which tile, if any, is under the cursor.
@@ -19,13 +16,13 @@ function tileUnderMouse() {
     for (var i = tiles.length - 1; i >= 0; --i) {
         var tile = tiles[i];
         if (tile == kingsTile) {
-            if (posInBounds(mouseX, mouseY, tile.x, tile.y, 3 * squareSize, squareSize) ||
-                posInBounds(mouseX, mouseY, tile.x + squareSize/2, tile.y + squareSize , 2 * squareSize, squareSize) ||
-                posInBounds(mouseX, mouseY, tile.x + squareSize, tile.y + (2 * squareSize), 1 * squareSize, squareSize)) {
+            if (posInBounds(mouseX, mouseY, tile.x, tile.y, 3 * SquareSize, SquareSize) ||
+                posInBounds(mouseX, mouseY, tile.x + SquareSize/2, tile.y + SquareSize , 2 * SquareSize, SquareSize) ||
+                posInBounds(mouseX, mouseY, tile.x + SquareSize, tile.y + (2 * SquareSize), 1 * SquareSize, SquareSize)) {
                 return tiles[i];
             }
-        } else if (phase.current > phase.placeKingsTile) {
-            if (posInBounds(mouseX, mouseY, tile.x, tile.y, 2.5 * squareSize, 2 * squareSize)) {
+        } else if (Phase.current > Phase.placeKingsTile) {
+            if (posInBounds(mouseX, mouseY, tile.x, tile.y, 2.5 * SquareSize, 2 * SquareSize)) {
                 return tiles[i];
             }
         }
@@ -37,11 +34,11 @@ function tileUnderMouse() {
 function pieceUnderMouse() {
     var hex = hexAtPos(mouseX, mouseY);
     if (hexInBounds(hex.x, hex.y)) {
-        var piece = board[hexToIndex(hex.x, hex.y)].piece;
+        var piece = Board[hexToIndex(hex.x, hex.y)].piece;
         if (piece != null) {
-            var centerX = hexPosX(hex.x, hex.y) + squareSize/2;
-            var centerY = hexPosY(hex.x, hex.y) + squareSize/2;
-            if (distance(mouseX, mouseY, centerX, centerY) <= (2/5) * squareSize) {
+            var centerX = hexPosX(hex.x, hex.y) + SquareSize/2;
+            var centerY = hexPosY(hex.x, hex.y) + SquareSize/2;
+            if (distance(mouseX, mouseY, centerX, centerY) <= (2/5) * SquareSize) {
                 return piece;
             }
         }
@@ -49,9 +46,9 @@ function pieceUnderMouse() {
     return null;
 }
 
-Board.onmousemove = function(event) {
-    mouseX = (event.clientX + document.body.scrollLeft) - (Table.offsetLeft + CanvasCell.offsetLeft + Board.offsetLeft);
-    mouseY = (event.clientY + document.body.scrollTop) - (Table.offsetTop + CanvasCell.offsetTop + Board.offsetTop);
+BoardCanvas.onmousemove = function(event) {
+    mouseX = (event.clientX + document.body.scrollLeft) - (Table.offsetLeft + CanvasCell.offsetLeft + this.offsetLeft);
+    mouseY = (event.clientY + document.body.scrollTop) - (Table.offsetTop + CanvasCell.offsetTop + this.offsetTop);
 
     // dragging
     if (mouseDown) {
@@ -67,23 +64,23 @@ Board.onmousemove = function(event) {
     } else {
         var piece = pieceUnderMouse();
         var tile = tileUnderMouse();
-        if ((piece != null) || ((tile != null) && (phase.current <= phase.placeKing))) {
-            Board.style.cursor = "pointer";
+        if ((piece != null) || ((tile != null) && (Phase.current <= Phase.placeKing))) {
+            this.style.cursor = "pointer";
         } else {
-            Board.style.cursor = "default";
+            this.style.cursor = "default";
         }
-        if (piece != displayedPiece) {
+        if (piece != DisplayedPiece) {
             showPieceInfo(piece);
             draw();
         }
     }
 
     // mousing over terrain
-    if (phase.current >= phase.placeKing) {
+    if (Phase.current >= Phase.placeKing) {
         showTerrainInfo(hexAtPos(mouseX, mouseY));
     }
 
-    if (((new Date()).getTime() - drawTime) > redrawInterval) {
+    if (((new Date()).getTime() - DrawTime) > RedrawInterval) {
         draw();
     }
     moved = true;
@@ -107,25 +104,25 @@ function interpretMove(piece, x, y) {
     return move;
 }
 
-Board.onmouseup = function() {
+BoardCanvas.onmouseup = function() {
     mouseDown = false;
 
     // dropping a piece
     if (movingPiece != null) {
         var hex = hexAtPos(movingPieceX, movingPieceY);
-        if ((phase.current == phase.playerToMove) || (phase.current == phase.playerSecondMove)) {
+        if ((Phase.current == Phase.playerToMove) || (Phase.current == Phase.playerSecondMove)) {
             var move = interpretMove(movingPiece, hex.x, hex.y);
             if (move != null) {
                 executeMove(move);
             }
-        } else if (phase.current <= phase.boardComplete) {
+        } else if (Phase.current <= Phase.boardComplete) {
             placePiece(movingPiece, hex.x, hex.y);
         }
         movingPiece = null;
         if (pieceUnderMouse() != null) {
-            Board.style.cursor = "pointer";
+            this.style.cursor = "pointer";
         } else {
-            Board.style.cursor = "default";
+            this.style.cursor = "default";
         }
 
     // dropping a tile
@@ -141,40 +138,40 @@ Board.onmouseup = function() {
             matchSlot(movingTile);
         }
         movingTile = null;
-        Board.style.cursor = "pointer";
+        this.style.cursor = "pointer";
     }
     
-    showMoves = [];
-    showCaptures = [];
+    ShowMoves = [];
+    ShowCaptures = [];
     draw();
 };
 
-Board.onmousedown = function(event) {
+BoardCanvas.onmousedown = function(event) {
     mouseDown = true;
     var x = mouseX;
     var y = mouseY;
     var piece = pieceUnderMouse();
     var tile = null;
-    if (phase.current < phase.placePieces) {
+    if (Phase.current < Phase.placePieces) {
         tile = tileUnderMouse();
     }
     if (piece != null) {
-        if ((playerOwns(piece) || mode.current == mode.sandbox) && ((phase.current == phase.placeKing && piece.type == pieceType.king) ||
-                                                                    (phase.current == phase.placePieces) ||
-                                                                    (phase.current == phase.boardComplete) ||
-                                                                    (phase.current == phase.playerToMove) ||
-                                                                    (phase.current == phase.playerSecondMove))) {
+        if ((playerOwns(piece) || Mode.current == Mode.sandbox) && ((Phase.current == Phase.placeKing && piece.type == PieceType.king) ||
+                                                                    (Phase.current == Phase.placePieces) ||
+                                                                    (Phase.current == Phase.boardComplete) ||
+                                                                    (Phase.current == Phase.playerToMove) ||
+                                                                    (Phase.current == Phase.playerSecondMove))) {
             movingPiece = piece;
-            movingPieceX = hexPosX(piece.x, piece.y) + squareSize/2;
-            movingPieceY = hexPosY(piece.x, piece.y) + squareSize/2;
+            movingPieceX = hexPosX(piece.x, piece.y) + SquareSize/2;
+            movingPieceY = hexPosY(piece.x, piece.y) + SquareSize/2;
             grabX = x - movingPieceX;
             grabY = y - movingPieceY;
-            moveToBack(piece, (playerOwns(piece) ? playerPieces : opponentPieces));
-            Board.style.cursor = "none";
+            moveToBack(piece, (playerOwns(piece) ? PlayerPieces : OpponentPieces));
+            this.style.cursor = "none";
         }
-        if (phase.current >= phase.playerToMove) { 
-            showMoves = getMoves(piece);
-            showCaptures = getCaptures(piece);
+        if (Phase.current >= Phase.playerToMove) { 
+            ShowMoves = getMoves(piece);
+            ShowCaptures = getCaptures(piece);
         }
     } else if (tile != null) {
         movingTile = tile;
@@ -182,7 +179,7 @@ Board.onmousedown = function(event) {
         grabY = y - tile.y;
         moveToBack(tile, tiles);
         moved = false;
-        Board.style.cursor = "none";
+        this.style.cursor = "none";
     }
     draw();
     event.preventDefault();

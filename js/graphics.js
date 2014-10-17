@@ -8,44 +8,44 @@ function drawTerrainThumbails() {
     var width = right - left;
     var height = bottom - top;
 
-    var mctx = MountainInfoCanvas.getContext("2d");
-    mctx.clearRect(0, 0, MountainInfoCanvas.width, MountainInfoCanvas.height);
-    mctx.beginPath();
-    mctx.lineWidth = 2;
-    mctx.strokeStyle = "#000000";
-    mctx.fillStyle = "#FFFFFF";
-    mctx.fillRect(left, top, width, height);
-    mctx.rect(left, top, width, height);
-    mctx.moveTo(left, top);
-    mctx.lineTo(right, bottom);
-    mctx.moveTo(right, top);
-    mctx.lineTo(left, bottom);
-    mctx.stroke();
+    var mCtx = MountainInfoCanvas.getContext("2d");
+    mCtx.clearRect(0, 0, MountainInfoCanvas.width, MountainInfoCanvas.height);
+    mCtx.beginPath();
+    mCtx.lineWidth = 2;
+    mCtx.strokeStyle = "#000000";
+    mCtx.fillStyle = "#FFFFFF";
+    mCtx.fillRect(left, top, width, height);
+    mCtx.rect(left, top, width, height);
+    mCtx.moveTo(left, top);
+    mCtx.lineTo(right, bottom);
+    mCtx.moveTo(right, top);
+    mCtx.lineTo(left, bottom);
+    mCtx.stroke();
 
-    var wctx = WaterInfoCanvas.getContext("2d");
-    wctx.clearRect(0, 0, WaterInfoCanvas.width, WaterInfoCanvas.height);
-    wctx.beginPath();
-    wctx.lineWidth = 2;
-    wctx.strokeStyle = "#000000";
-    wctx.fillStyle = "#C0C0C0";
-    wctx.fillRect(left, top, width, height);
-    wctx.rect(left, top, width, height);
-    wctx.stroke();
+    var wCtx = WaterInfoCanvas.getContext("2d");
+    wCtx.clearRect(0, 0, WaterInfoCanvas.width, WaterInfoCanvas.height);
+    wCtx.beginPath();
+    wCtx.lineWidth = 2;
+    wCtx.strokeStyle = "#000000";
+    wCtx.fillStyle = "#C0C0C0";
+    wCtx.fillRect(left, top, width, height);
+    wCtx.rect(left, top, width, height);
+    wCtx.stroke();
 }
 
 // Animations
 
 function animationCompletion(animation) {
-    return (drawTime - animation.startTime) / (animation.endTime - animation.startTime);
+    return (DrawTime - animation.startTime) / (animation.endTime - animation.startTime);
 }
 
 function animateRotation(tile) {
     // This loop is just for fun.
-    for (var i = 0; i < animatingTiles.length; ++i) {
-        if (animatingTiles[i].id == tile.id) {
-            if (animatingTiles[i].type == animationType.rotation) {
-                animatingTiles[i].startTime += 200;
-                animatingTiles[i].endTime += 200;
+    for (var i = 0; i < AnimatingTiles.length; ++i) {
+        if (AnimatingTiles[i].id == tile.id) {
+            if (AnimatingTiles[i].type == AnimationType.rotation) {
+                AnimatingTiles[i].startTime += 200;
+                AnimatingTiles[i].endTime += 200;
                 return;
             } else {
                 break;
@@ -53,27 +53,27 @@ function animateRotation(tile) {
         }
     }
     var now = (new Date()).getTime();
-    animatingTiles.push({id: tile.id, type: animationType.rotation, startTime: now, endTime: now + 200});
+    AnimatingTiles.push({id: tile.id, type: AnimationType.rotation, startTime: now, endTime: now + 200});
 }
 
 function animateFlip(tile) {
     var now = (new Date()).getTime();
-    animatingTiles.push({id: tile.id, type: animationType.flip, startTime: now, endTime: now + 150});
+    AnimatingTiles.push({id: tile.id, type: AnimationType.flip, startTime: now, endTime: now + 150});
 }
 
 function animateMove(move) {
     var now = (new Date()).getTime();
     var moveTime = 0;
-    if ((mode.current != mode.sandbox) && (move.color != playerColor)) {
+    if ((Mode.current != Mode.sandbox) && (move.color != PlayerColor)) {
         moveTime = (200 * hexDistance(move.x0, move.y0, move.x1, move.y1));
-        animatingPieces.unshift({piece: {type: move.type, color: move.color},
+        AnimatingPieces.unshift({piece: {type: move.type, color: move.color},
                                 x0: move.x0, y0: move.y0, x: move.x1, y: move.y1,
                                 startTime: now, endTime: now + moveTime});
     }
     if (move.capture) {
         var delay = Math.max(0, moveTime - 200);
-        var drop = (move.color == topColor ? 6 : -6);
-        animatingPieces.unshift({piece: {type: move.capType, color: !(move.color)},
+        var drop = (move.color == TopColor ? 6 : -6);
+        AnimatingPieces.unshift({piece: {type: move.capType, color: !(move.color)},
                                 x0: move.x2, y0: move.y2, x: move.x2 - drop, y: move.y2 + drop,
                                 startTime: now + delay, endTime: now + delay + 1000});
     }
@@ -81,30 +81,30 @@ function animateMove(move) {
 
 function animateScreen() {
     var now = (new Date()).getTime();
-    screenAnimation = {startTime: now, endTime: now + 2000};
+    ScreenAnimation = {startTime: now, endTime: now + 2000};
 }
 
 function updateAnimations() {
-    for (var i = 0; i < animatingTiles.length; ++i) {
-        if (animatingTiles[i].endTime <= drawTime) {
-            animatingTiles.splice(i--, 1);
+    for (var i = 0; i < AnimatingTiles.length; ++i) {
+        if (AnimatingTiles[i].endTime <= DrawTime) {
+            AnimatingTiles.splice(i--, 1);
         }
     }
-    for (var i = 0; i < animatingPieces.length; ++i) {
-        if (animatingPieces[i].endTime <= drawTime) {
-            animatingPieces.splice(i--, 1);
+    for (var i = 0; i < AnimatingPieces.length; ++i) {
+        if (AnimatingPieces[i].endTime <= DrawTime) {
+            AnimatingPieces.splice(i--, 1);
         }
     }
     for (var i = 0; i < tiles.length; ++i) {
         var tile = tiles[i];
-        var side = ((tile.x + (1.25 * squareSize)) < (kingsTile.x + (1.5 * squareSize)));
+        var side = ((tile.x + (1.25 * SquareSize)) < (kingsTile.x + (1.5 * SquareSize)));
         if (tile.side != side) {
             animateFlip(tile);
             tile.side = side;
         }
     }
-    if ((screenAnimation != null) && (screenAnimation.endTime <= drawTime)) {
-        screenAnimation = null;
+    if ((ScreenAnimation != null) && (ScreenAnimation.endTime <= DrawTime)) {
+        ScreenAnimation = null;
     }
 }
 
@@ -112,62 +112,62 @@ function updateAnimations() {
 // Drawing
 
 function drawSquare(x, y, terrain) {
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#000000";
-    if (terrain == terType.water) {
-        ctx.fillStyle = "#C0C0C0";
+    Ctx.beginPath();
+    Ctx.lineWidth = 2;
+    Ctx.strokeStyle = "#000000";
+    if (terrain == TerType.water) {
+        Ctx.fillStyle = "#C0C0C0";
     } else {
-        ctx.fillStyle = "#FFFFFF";
+        Ctx.fillStyle = "#FFFFFF";
     }
-    ctx.fillRect(x, y, squareSize, squareSize);
-    ctx.rect(x, y, squareSize, squareSize);
-    if (terrain == terType.mountain) {
-        ctx.moveTo(x,y);
-        ctx.lineTo(x + squareSize, y + squareSize);
-        ctx.moveTo(x + squareSize, y);
-        ctx.lineTo(x, y + squareSize);
+    Ctx.fillRect(x, y, SquareSize, SquareSize);
+    Ctx.rect(x, y, SquareSize, SquareSize);
+    if (terrain == TerType.mountain) {
+        Ctx.moveTo(x,y);
+        Ctx.lineTo(x + SquareSize, y + SquareSize);
+        Ctx.moveTo(x + SquareSize, y);
+        Ctx.lineTo(x, y + SquareSize);
     }
-    ctx.stroke();
+    Ctx.stroke();
 }
 
 function drawBoard() {
     for (var i = 0; i < 88; ++i) {
         var hex = indexToHex(i);
         var pos = hexPos(hex.x, hex.y);
-        drawSquare(pos.x, pos.y, board[i].terrain);
+        drawSquare(pos.x, pos.y, Board[i].terrain);
     }
 }
 
 function drawXLabel(x, y, overHex) {
     if (x == overHex.x) {
-        ctx.fillStyle = "#FFFFFF";
-        ctx.strokeText(XToChar(x), hexPosX(x, y) + squareSize/2, hexPosY(x, y) + squareSize/2 + 8);
-        ctx.fillText(XToChar(x), hexPosX(x, y) + squareSize/2, hexPosY(x, y) + squareSize/2 + 8);
-        ctx.fillStyle = "#000000";
+        Ctx.fillStyle = "#FFFFFF";
+        Ctx.strokeText(XToChar(x), hexPosX(x, y) + SquareSize/2, hexPosY(x, y) + SquareSize/2 + 8);
+        Ctx.fillText(XToChar(x), hexPosX(x, y) + SquareSize/2, hexPosY(x, y) + SquareSize/2 + 8);
+        Ctx.fillStyle = "#000000";
     } else {
-        ctx.fillText(XToChar(x), hexPosX(x, y) + squareSize/2, hexPosY(x, y) + squareSize/2 + 8);
+        Ctx.fillText(XToChar(x), hexPosX(x, y) + SquareSize/2, hexPosY(x, y) + SquareSize/2 + 8);
     }
 }
 
 function drawYLabel(x, y, overHex) {
     if (y == overHex.y) {
-        ctx.fillStyle = "#FFFFFF";
-        ctx.strokeText(y + 1, hexPosX(x, y) + squareSize/2, hexPosY(x, y) + squareSize/2 + 8);
-        ctx.fillText(y + 1, hexPosX(x, y) + squareSize/2, hexPosY(x, y) + squareSize/2 + 8);
-        ctx.fillStyle = "#000000";
+        Ctx.fillStyle = "#FFFFFF";
+        Ctx.strokeText(y + 1, hexPosX(x, y) + SquareSize/2, hexPosY(x, y) + SquareSize/2 + 8);
+        Ctx.fillText(y + 1, hexPosX(x, y) + SquareSize/2, hexPosY(x, y) + SquareSize/2 + 8);
+        Ctx.fillStyle = "#000000";
     } else {
-        ctx.fillText(y + 1, hexPosX(x, y) + squareSize/2, hexPosY(x, y) + squareSize/2 + 8);
+        Ctx.fillText(y + 1, hexPosX(x, y) + SquareSize/2, hexPosY(x, y) + SquareSize/2 + 8);
     }
 }
 
 function drawCoordinates() {
-    ctx.beginPath();
-    ctx.lineWidth = 3;
-    ctx.font = "20px sans-serif";
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#000000";
-    ctx.textAlign = "center";
+    Ctx.beginPath();
+    Ctx.lineWidth = 3;
+    Ctx.font = "20px sans-serif";
+    Ctx.strokeStyle = "#000000";
+    Ctx.fillStyle = "#000000";
+    Ctx.textAlign = "center";
     var overHex = hexAtPos(mouseX, mouseY);
     if (!hexInBounds(overHex.x, overHex.y)) {
         overHex = {x: -1, y: -1};
@@ -194,68 +194,68 @@ function drawCoordinates() {
         ++y;
         drawYLabel(x, y, overHex)
     }
-    ctx.stroke();
+    Ctx.stroke();
 }
 
 function drawDividerScreen() {
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#FFFFFF";
+    Ctx.beginPath();
+    Ctx.lineWidth = 2;
+    Ctx.strokeStyle = "#000000";
+    Ctx.fillStyle = "#FFFFFF";
     var liftHeight =  0;
-    if (screenAnimation != null) {
-        liftHeight = animationCompletion(screenAnimation) * ((4.5 * squareSize) + topMargin);
+    if (ScreenAnimation != null) {
+        liftHeight = animationCompletion(ScreenAnimation) * ((4.5 * SquareSize) + TopMargin);
     }
-    ctx.rect(leftMargin, topMargin - liftHeight, squareSize * 12, squareSize * 4.5);
-    ctx.fill();
-    ctx.stroke();
+    Ctx.rect(LeftMargin, TopMargin - liftHeight, SquareSize * 12, SquareSize * 4.5);
+    Ctx.fill();
+    Ctx.stroke();
 }
 
 function drawBaseBoard() {
 
-    ctx.beginPath();
-    ctx.fillStyle = "#F3F3F3";
+    Ctx.beginPath();
+    Ctx.fillStyle = "#F3F3F3";
     traceUnbuiltBoardBottom();
-    ctx.fill();
+    Ctx.fill();
 
     drawSlots();
 
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#000000";
+    Ctx.beginPath();
+    Ctx.lineWidth = 2;
+    Ctx.strokeStyle = "#000000";
     traceUnbuiltBoardBottom();
-    ctx.stroke();
+    Ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle = "#FFFFFF";
-    var midline = topMargin + (4.5 * squareSize);
+    Ctx.beginPath();
+    Ctx.fillStyle = "#FFFFFF";
+    var midline = TopMargin + (4.5 * SquareSize);
     for (var n = 0; n < 12; ++n) {
-        ctx.rect(leftMargin + (n * squareSize), midline, squareSize, squareSize/2);
+        Ctx.rect(LeftMargin + (n * SquareSize), midline, SquareSize, SquareSize/2);
     }
-    ctx.fill();
-    ctx.stroke();
+    Ctx.fill();
+    Ctx.stroke();
 }
 
 function traceUnbuiltBoardBottom() {
-    var midline = topMargin + (4.5 * squareSize);
-    var x = leftMargin + squareSize/2;
-    var y = midline + squareSize/2;
-    ctx.moveTo(x, y);
+    var midline = TopMargin + (4.5 * SquareSize);
+    var x = LeftMargin + SquareSize/2;
+    var y = midline + SquareSize/2;
+    Ctx.moveTo(x, y);
     for (var n = 0; n < 4; ++n) {
-        y += squareSize;
-        ctx.lineTo(x, y);
-        x += squareSize/2;
-        ctx.lineTo(x, y);
+        y += SquareSize;
+        Ctx.lineTo(x, y);
+        x += SquareSize/2;
+        Ctx.lineTo(x, y);
     }
-    x = leftMargin + (10 * squareSize);
-    ctx.lineTo(x, y);
+    x = LeftMargin + (10 * SquareSize);
+    Ctx.lineTo(x, y);
     for (var n = 0; n < 4; ++n) {
-        y -= squareSize;
-        ctx.lineTo(x, y);
-        x += squareSize/2;
-        ctx.lineTo(x, y);
+        y -= SquareSize;
+        Ctx.lineTo(x, y);
+        x += SquareSize/2;
+        Ctx.lineTo(x, y);
     }
-    ctx.lineTo(leftMargin + squareSize/2, midline + squareSize/2);
+    Ctx.lineTo(LeftMargin + SquareSize/2, midline + SquareSize/2);
 }
 
 function drawSlots() {
@@ -263,132 +263,132 @@ function drawSlots() {
         drawKingsTileSlots();
     } else if (kingSlots[0].tile != null) {
         drawHorzSlotDivider();
-        drawLeftSlotDivider(leftMargin + (2.5 * squareSize));
-        drawRightSlotDivider(leftMargin + (7.5 * squareSize));
-        drawRightSlotDivider(leftMargin + (9.5 * squareSize));
+        drawLeftSlotDivider(LeftMargin + (2.5 * SquareSize));
+        drawRightSlotDivider(LeftMargin + (7.5 * SquareSize));
+        drawRightSlotDivider(LeftMargin + (9.5 * SquareSize));
     } else if (kingSlots[1].tile != null) {
         drawHorzSlotDivider();
-        drawLeftSlotDivider(leftMargin + (2.5 * squareSize));
-        drawLeftSlotDivider(leftMargin + (4.5 * squareSize));
-        drawRightSlotDivider(leftMargin + (9.5 * squareSize));
+        drawLeftSlotDivider(LeftMargin + (2.5 * SquareSize));
+        drawLeftSlotDivider(LeftMargin + (4.5 * SquareSize));
+        drawRightSlotDivider(LeftMargin + (9.5 * SquareSize));
     } else if (kingSlots[2].tile != null) {
         drawHorzSlotDivider();
-        drawLeftSlotDivider(leftMargin + (2.5 * squareSize));
-        drawLeftSlotDivider(leftMargin + (4.5 * squareSize));
-        drawLeftSlotDivider(leftMargin + (6.5 * squareSize));
+        drawLeftSlotDivider(LeftMargin + (2.5 * SquareSize));
+        drawLeftSlotDivider(LeftMargin + (4.5 * SquareSize));
+        drawLeftSlotDivider(LeftMargin + (6.5 * SquareSize));
     } else {
         drawKingsTileSlots();
     }
 }
 
 function drawLeftSlotDivider(x) {
-    ctx.beginPath();
-    ctx.strokeStyle = "#C0C0C0";
-    ctx.lineWidth = 2;
-    var y = topMargin + (5 * squareSize);
-    ctx.moveTo(x, y);
+    Ctx.beginPath();
+    Ctx.strokeStyle = "#C0C0C0";
+    Ctx.lineWidth = 2;
+    var y = TopMargin + (5 * SquareSize);
+    Ctx.moveTo(x, y);
     for (var n = 0; n < 4; ++n) {
-        y += squareSize;
-        ctx.lineTo(x, y);
-        x += squareSize/2;
-        ctx.lineTo(x, y);
+        y += SquareSize;
+        Ctx.lineTo(x, y);
+        x += SquareSize/2;
+        Ctx.lineTo(x, y);
     }
-    ctx.stroke();
+    Ctx.stroke();
 }
 
 function drawRightSlotDivider(x) {
-    ctx.beginPath();
-    ctx.strokeStyle = "#C0C0C0";
-    ctx.lineWidth = 2;
-    var y = topMargin + (5 * squareSize);
-    ctx.moveTo(x, y);
+    Ctx.beginPath();
+    Ctx.strokeStyle = "#C0C0C0";
+    Ctx.lineWidth = 2;
+    var y = TopMargin + (5 * SquareSize);
+    Ctx.moveTo(x, y);
     for (var n = 0; n < 4; ++n) {
-        y += squareSize;
-        ctx.lineTo(x, y);
-        x -= squareSize/2;
-        ctx.lineTo(x, y);
+        y += SquareSize;
+        Ctx.lineTo(x, y);
+        x -= SquareSize/2;
+        Ctx.lineTo(x, y);
     }
-    ctx.stroke();
+    Ctx.stroke();
 }
 
 function drawHorzSlotDivider() {
-    ctx.beginPath();
-    ctx.strokeStyle = "#C0C0C0";
-    ctx.lineWidth = 2;
-    var y = topMargin + (7 * squareSize);
-    ctx.moveTo(leftMargin + (1.5 * squareSize), y);
-    ctx.lineTo(leftMargin + (10.5 * squareSize), y);
-    ctx.stroke();
+    Ctx.beginPath();
+    Ctx.strokeStyle = "#C0C0C0";
+    Ctx.lineWidth = 2;
+    var y = TopMargin + (7 * SquareSize);
+    Ctx.moveTo(LeftMargin + (1.5 * SquareSize), y);
+    Ctx.lineTo(LeftMargin + (10.5 * SquareSize), y);
+    Ctx.stroke();
 }
 
 function drawKingsTileSlots() {
-    ctx.beginPath();
-    ctx.strokeStyle = "#C0C0C0";
-    ctx.lineWidth = 2;
-    var x = leftMargin + (2.5 * squareSize);
-    var y = topMargin + (5 * squareSize);
-    ctx.moveTo(x, y);
+    Ctx.beginPath();
+    Ctx.strokeStyle = "#C0C0C0";
+    Ctx.lineWidth = 2;
+    var x = LeftMargin + (2.5 * SquareSize);
+    var y = TopMargin + (5 * SquareSize);
+    Ctx.moveTo(x, y);
     for (var n = 0; n < 3; ++n) {
-        y += squareSize;
-        ctx.lineTo(x, y);
-        x += squareSize/2;
-        ctx.lineTo(x, y);
+        y += SquareSize;
+        Ctx.lineTo(x, y);
+        x += SquareSize/2;
+        Ctx.lineTo(x, y);
     }
     for (var n = 0; n < 2; ++n) {
-        x += squareSize/2;
-        ctx.lineTo(x, y);
-        y -= squareSize;
-        ctx.lineTo(x, y);
-        x += squareSize;
-        ctx.lineTo(x, y);
-        y += squareSize;
-        ctx.lineTo(x, y);
-        x += squareSize/2;
-        ctx.lineTo(x, y);
+        x += SquareSize/2;
+        Ctx.lineTo(x, y);
+        y -= SquareSize;
+        Ctx.lineTo(x, y);
+        x += SquareSize;
+        Ctx.lineTo(x, y);
+        y += SquareSize;
+        Ctx.lineTo(x, y);
+        x += SquareSize/2;
+        Ctx.lineTo(x, y);
     }
     for (var n = 0; n < 3; ++n) {
-        x += squareSize/2;
-        ctx.lineTo(x, y);
-        y -= squareSize;
-        ctx.lineTo(x, y);
+        x += SquareSize/2;
+        Ctx.lineTo(x, y);
+        y -= SquareSize;
+        Ctx.lineTo(x, y);
     }
-    x = leftMargin + (5 * squareSize);
-    y = topMargin + (6 * squareSize);
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, y + squareSize);
-    x += 2 * squareSize;
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, y + squareSize);
-    ctx.stroke();
-    x = leftMargin + (4 * squareSize);
-    y = topMargin + (7.5 * squareSize);
+    x = LeftMargin + (5 * SquareSize);
+    y = TopMargin + (6 * SquareSize);
+    Ctx.moveTo(x, y);
+    Ctx.lineTo(x, y + SquareSize);
+    x += 2 * SquareSize;
+    Ctx.moveTo(x, y);
+    Ctx.lineTo(x, y + SquareSize);
+    Ctx.stroke();
+    x = LeftMargin + (4 * SquareSize);
+    y = TopMargin + (7.5 * SquareSize);
     for (var n = 0; n < 3; ++n) {
-        ctx.moveTo(x + squareSize/6, y);
-        ctx.arc(x, y, squareSize/6, 0, 2*Math.PI);
-        x += 2 * squareSize;
+        Ctx.moveTo(x + SquareSize/6, y);
+        Ctx.arc(x, y, SquareSize/6, 0, 2*Math.PI);
+        x += 2 * SquareSize;
     }
-    ctx.stroke();
+    Ctx.stroke();
 }
 
 function drawKingsTile() {
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#FFFFFF";
+    Ctx.beginPath();
+    Ctx.lineWidth = 2;
+    Ctx.strokeStyle = "#000000";
+    Ctx.fillStyle = "#FFFFFF";
     var x = kingsTile.x;
     var y = kingsTile.y;
     for (var row = 3; row > 0; --row) {
         for (var n = 0; n < row; ++n) {
-            ctx.rect(x + (n * squareSize), y, squareSize, squareSize);
-            ctx.fillRect(x + (n * squareSize), y, squareSize, squareSize);
+            Ctx.rect(x + (n * SquareSize), y, SquareSize, SquareSize);
+            Ctx.fillRect(x + (n * SquareSize), y, SquareSize, SquareSize);
         }
-        x += squareSize/2;
-        y += squareSize;
+        x += SquareSize/2;
+        y += SquareSize;
     }
-    y -= squareSize/2;
-    ctx.moveTo(x + squareSize/6, y);
-    ctx.arc(x, y, squareSize/6, 0, 2*Math.PI);
-    ctx.stroke();
+    y -= SquareSize/2;
+    Ctx.moveTo(x + SquareSize/6, y);
+    Ctx.arc(x, y, SquareSize/6, 0, 2*Math.PI);
+    Ctx.stroke();
 }
 
 function drawTiles() {
@@ -399,114 +399,114 @@ function drawTiles() {
         } else {
             var rotation = 0;
             var flip = 1;
-            for (var j = 0; j < animatingTiles.length; ++j) {
-                if (animatingTiles[j].id == tile.id) {
-                    var animation = animatingTiles[j];
-                    if (animation.type == animationType.rotation) {
+            for (var j = 0; j < AnimatingTiles.length; ++j) {
+                if (AnimatingTiles[j].id == tile.id) {
+                    var animation = AnimatingTiles[j];
+                    if (animation.type == AnimationType.rotation) {
                         rotation = Math.PI * (1 + animationCompletion(animation));
-                    } else if (animation.type == animationType.flip) {
+                    } else if (animation.type == AnimationType.flip) {
                         flip = (2 * animationCompletion(animation)) - 1;
                     }
                 }
             }
-            ctx.save();
-            ctx.translate(tile.x + (1.25 * squareSize), tile.y + squareSize);
-            ctx.rotate(rotation);
-            ctx.scale(Math.abs(flip), 1);
+            Ctx.save();
+            Ctx.translate(tile.x + (1.25 * SquareSize), tile.y + SquareSize);
+            Ctx.rotate(rotation);
+            Ctx.scale(Math.abs(flip), 1);
             if (tile.side != (flip < 0)) {
-                drawSquare(-1.25 * squareSize, -1 * squareSize, tile.squares[0]);
-                drawSquare(-0.25 * squareSize, -1 * squareSize, tile.squares[1]);
-                drawSquare(-0.75 * squareSize, 0, tile.squares[2]);
-                drawSquare(0.25 * squareSize, 0, tile.squares[3]);
+                drawSquare(-1.25 * SquareSize, -1 * SquareSize, tile.squares[0]);
+                drawSquare(-0.25 * SquareSize, -1 * SquareSize, tile.squares[1]);
+                drawSquare(-0.75 * SquareSize, 0, tile.squares[2]);
+                drawSquare(0.25 * SquareSize, 0, tile.squares[3]);
             } else {
-                drawSquare(-0.75 * squareSize, -1 * squareSize, tile.squares[4]);
-                drawSquare(0.25 * squareSize, -1 * squareSize, tile.squares[5]);
-                drawSquare(-1.25 * squareSize, 0, tile.squares[6]);
-                drawSquare(-0.25 * squareSize, 0, tile.squares[7]);
+                drawSquare(-0.75 * SquareSize, -1 * SquareSize, tile.squares[4]);
+                drawSquare(0.25 * SquareSize, -1 * SquareSize, tile.squares[5]);
+                drawSquare(-1.25 * SquareSize, 0, tile.squares[6]);
+                drawSquare(-0.25 * SquareSize, 0, tile.squares[7]);
             }
-            ctx.restore();
+            Ctx.restore();
         }
     }
-    if ((phase.current != phase.placeKingsTile) && (movingTile != null) && moved) {
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "#000000";
-        var x = kingsTile.x + (1.5 * squareSize);
-        for (var y = topMargin; y < topMargin + (9 * squareSize); y += squareSize/4) {
-            ctx.moveTo(x, y);
-            ctx.lineTo(x, y + squareSize/8);
+    if ((Phase.current != Phase.placeKingsTile) && (movingTile != null) && moved) {
+        Ctx.beginPath();
+        Ctx.lineWidth = 2;
+        Ctx.strokeStyle = "#000000";
+        var x = kingsTile.x + (1.5 * SquareSize);
+        for (var y = TopMargin; y < TopMargin + (9 * SquareSize); y += SquareSize/4) {
+            Ctx.moveTo(x, y);
+            Ctx.lineTo(x, y + SquareSize/8);
         }
-        ctx.stroke();
+        Ctx.stroke();
     }
 }
 
 function drawPieceAt(piece, x, y, redCircle) {
-    var radius = (2/5) * squareSize;
+    var radius = (2/5) * SquareSize;
     var artIndex = piece.type + (piece.color * 10);
-    if (squareSize == 50) {
-        ctx.drawImage(pieceArt[artIndex], x - radius - 1, y - radius - 1);
+    if (SquareSize == 50) {
+        Ctx.drawImage(PieceArt[artIndex], x - radius - 1, y - radius - 1);
     } else {
-        ctx.drawImage(pieceArt[artIndex], x - radius, y - radius, 2 * radius, 2 * radius);
+        Ctx.drawImage(PieceArt[artIndex], x - radius, y - radius, 2 * radius, 2 * radius);
     }
     if (redCircle) {
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "#FF0000";
-        ctx.moveTo(x + radius, y);
-        ctx.arc(x, y, radius, 0, 2*Math.PI);
-        ctx.stroke();
+        Ctx.beginPath();
+        Ctx.lineWidth = 2;
+        Ctx.strokeStyle = "#FF0000";
+        Ctx.moveTo(x + radius, y);
+        Ctx.arc(x, y, radius, 0, 2*Math.PI);
+        Ctx.stroke();
     }
 }
 
 function drawPiece(piece) {
     if (piece == movingPiece) {
         drawPieceAt(piece, movingPieceX, movingPieceY, false);
-    } else if (!containsHex(animatingPieces, piece.x, piece.y)) {
+    } else if (!containsHex(AnimatingPieces, piece.x, piece.y)) {
         var pos = hexPos(piece.x, piece.y);
-        var redCircle = (mode.current != mode.sandbox) && containsHex(kingThreats, piece.x, piece.y)
-        drawPieceAt(piece, pos.x + squareSize/2, pos.y + squareSize/2, redCircle);
+        var redCircle = (Mode.current != Mode.sandbox) && containsHex(KingThreats, piece.x, piece.y)
+        drawPieceAt(piece, pos.x + SquareSize/2, pos.y + SquareSize/2, redCircle);
     }
 }
 
 function drawAnimatingPieces() {
-    for (var i = 0; i < animatingPieces.length; ++i) {
-        var completion = animationCompletion(animatingPieces[i]);
-        var origin = hexPos(animatingPieces[i].x0, animatingPieces[i].y0);
-        var x = origin.x + squareSize/2;
-        var y = origin.y + squareSize/2;
+    for (var i = 0; i < AnimatingPieces.length; ++i) {
+        var completion = animationCompletion(AnimatingPieces[i]);
+        var origin = hexPos(AnimatingPieces[i].x0, AnimatingPieces[i].y0);
+        var x = origin.x + SquareSize/2;
+        var y = origin.y + SquareSize/2;
         if (completion > 0) {
-            var target = hexPos(animatingPieces[i].x, animatingPieces[i].y);
+            var target = hexPos(AnimatingPieces[i].x, AnimatingPieces[i].y);
             x += completion * (target.x - origin.x);
             y += completion * (target.y - origin.y);
         }
-        drawPieceAt(animatingPieces[i].piece, x, y, false);
+        drawPieceAt(AnimatingPieces[i].piece, x, y, false);
     }
 }
 
 var twiceRootThree = 2 * Math.sqrt(3);
 
 function traceLeftArrowHead(x, y) {
-    ctx.moveTo(x - 4, y);
-    ctx.lineTo(x + 2, y + twiceRootThree);
-    ctx.lineTo(x + 2, y - twiceRootThree);
-    ctx.lineTo(x - 4, y);
-    ctx.closePath();
+    Ctx.moveTo(x - 4, y);
+    Ctx.lineTo(x + 2, y + twiceRootThree);
+    Ctx.lineTo(x + 2, y - twiceRootThree);
+    Ctx.lineTo(x - 4, y);
+    Ctx.closePath();
 }
 
 function traceRightArrowHead(x, y) {
-    ctx.moveTo(x + 4, y);
-    ctx.lineTo(x - 2, y + twiceRootThree);
-    ctx.lineTo(x - 2, y - twiceRootThree);
-    ctx.lineTo(x + 4, y);
-    ctx.closePath();
+    Ctx.moveTo(x + 4, y);
+    Ctx.lineTo(x - 2, y + twiceRootThree);
+    Ctx.lineTo(x - 2, y - twiceRootThree);
+    Ctx.lineTo(x + 4, y);
+    Ctx.closePath();
 }
 
 function drawEngagementLine(engager, engaged, red) {
     var engagerPos = hexPos(engager.x, engager.y);
     var engagedPos = hexPos(engaged.x, engaged.y);
     var dist = distance(engagerPos.x, engagerPos.y, engagedPos.x, engagedPos.y);
-    var endPointX = engagedPos.x + squareSize/2 + ((2/5) * squareSize * (engagerPos.x - engagedPos.x) / dist);
-    var endPointY = engagedPos.y + squareSize/2 + ((2/5) * squareSize * (engagerPos.y - engagedPos.y) / dist);
+    var endPointX = engagedPos.x + SquareSize/2 + ((2/5) * SquareSize * (engagerPos.x - engagedPos.x) / dist);
+    var endPointY = engagedPos.y + SquareSize/2 + ((2/5) * SquareSize * (engagerPos.y - engagedPos.y) / dist);
 
     var traceArrowHead;
     // if ((engagerPos.x + engagerPos.y > engagedPos.x + engagedPos.y) != (engagerPos.x - engagerPos.y == engagedPos.x - engagedPos.y)) {
@@ -516,46 +516,46 @@ function drawEngagementLine(engager, engaged, red) {
         traceArrowHead = traceRightArrowHead;
     }
 
-    ctx.beginPath();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "#000000";
-    ctx.moveTo(engagerPos.x + squareSize/2, engagerPos.y + squareSize/2);
-    ctx.lineTo(endPointX, endPointY);
+    Ctx.beginPath();
+    Ctx.lineWidth = 4;
+    Ctx.strokeStyle = "#000000";
+    Ctx.moveTo(engagerPos.x + SquareSize/2, engagerPos.y + SquareSize/2);
+    Ctx.lineTo(endPointX, endPointY);
     traceArrowHead(endPointX, endPointY);
-    ctx.stroke();
+    Ctx.stroke();
 
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = (red ? "#FF0000" : "#FFFFCC");
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.moveTo(engagerPos.x + squareSize/2, engagerPos.y + squareSize/2);
-    ctx.lineTo(endPointX, endPointY);
+    Ctx.beginPath();
+    Ctx.lineWidth = 2;
+    Ctx.strokeStyle = (red ? "#FF0000" : "#FFFFCC");
+    Ctx.fillStyle = Ctx.strokeStyle;
+    Ctx.moveTo(engagerPos.x + SquareSize/2, engagerPos.y + SquareSize/2);
+    Ctx.lineTo(endPointX, endPointY);
     traceArrowHead(endPointX, endPointY);
-    ctx.fill();
-    ctx.stroke();
+    Ctx.fill();
+    Ctx.stroke();
 }
 
 function drawRangeMarker(piece, marker) {
-    var x = hexPosX(marker.x, marker.y) + squareSize/2;
-    var y = hexPosY(marker.x, marker.y) + squareSize/2;
+    var x = hexPosX(marker.x, marker.y) + SquareSize/2;
+    var y = hexPosY(marker.x, marker.y) + SquareSize/2;
     if ((piece.x + piece.y > marker.x + marker.y) != (piece.x - piece.y == marker.x - marker.y)) {
         traceArrowHead = traceRightArrowHead;
     } else {
         traceArrowHead = traceLeftArrowHead;
     }
-    ctx.beginPath();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "#000000";
+    Ctx.beginPath();
+    Ctx.lineWidth = 4;
+    Ctx.strokeStyle = "#000000";
     traceArrowHead(x, y);
-    ctx.stroke();
+    Ctx.stroke();
 
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#F0F0C0";
-    ctx.fillStyle = "#F0F0C0";
+    Ctx.beginPath();
+    Ctx.lineWidth = 2;
+    Ctx.strokeStyle = "#F0F0C0";
+    Ctx.fillStyle = "#F0F0C0";
     traceArrowHead(x, y);
-    ctx.fill();
-    ctx.stroke();
+    Ctx.fill();
+    Ctx.stroke();
 }
 
 function drawEngagement() {
@@ -564,7 +564,7 @@ function drawEngagement() {
     if (piece != null) {
         var engagement = getEngagement(piece);
         var rangeMarkers = getRangeMarkers(piece);
-        var armor = pieceArmor[piece.type];
+        var armor = PieceArmor[piece.type];
         var red = engagement >= armor;
 
         //draw lines
@@ -583,70 +583,70 @@ function drawEngagement() {
         }
 
         //draw numbers
-        ctx.beginPath();
-        ctx.lineWidth = 3;
-        ctx.font = "bold 14px sans-serif"
-        ctx.textAlign = "center";
-        ctx.strokeStyle = "#000000";
-        ctx.fillStyle = (red ? "#FF0000" : "#F0F0C0");
+        Ctx.beginPath();
+        Ctx.lineWidth = 3;
+        Ctx.font = "bold 14px sans-serif"
+        Ctx.textAlign = "center";
+        Ctx.strokeStyle = "#000000";
+        Ctx.fillStyle = (red ? "#FF0000" : "#F0F0C0");
         var text = engagement + "/" + armor;
-        var x = hexPosX(piece.x, piece.y) + squareSize/2;
-        var y = hexPosY(piece.x, piece.y) + squareSize;
-        ctx.strokeText(text, x, y);
-        ctx.fillText(text, x, y);
-        ctx.stroke();
+        var x = hexPosX(piece.x, piece.y) + SquareSize/2;
+        var y = hexPosY(piece.x, piece.y) + SquareSize;
+        Ctx.strokeText(text, x, y);
+        Ctx.fillText(text, x, y);
+        Ctx.stroke();
     }
 }
 
 function drawMoveDot(x, y, color) {
-    ctx.beginPath();
-    //ctx.lineWidth = 1.5;
-    //ctx.strokeStyle = "#000000";
-    ctx.fillStyle = color;
-    var xPos = hexPosX(x, y) + squareSize/2;
-    var yPos = hexPosY(x, y) + squareSize/2;
-    ctx.moveTo(xPos + squareSize/6, yPos);
-    ctx.arc(xPos, yPos, squareSize/6, 0, 2*Math.PI);
-    ctx.fill();
-    //ctx.stroke();
+    Ctx.beginPath();
+    //Ctx.lineWidth = 1.5;
+    //Ctx.strokeStyle = "#000000";
+    Ctx.fillStyle = color;
+    var xPos = hexPosX(x, y) + SquareSize/2;
+    var yPos = hexPosY(x, y) + SquareSize/2;
+    Ctx.moveTo(xPos + SquareSize/6, yPos);
+    Ctx.arc(xPos, yPos, SquareSize/6, 0, 2*Math.PI);
+    Ctx.fill();
+    //Ctx.stroke();
 }
 
 function drawMoveOctagon(x, y, color) {
-    ctx.beginPath();
-    //ctx.lineWidth = 1.5;
-    //ctx.strokeStyle = "#000000";
-    ctx.fillStyle = color;
-    var xPos = hexPosX(x, y) + squareSize/2;
-    var yPos = hexPosY(x, y) + squareSize/2;
-    // ctx.moveTo(xPos - squareSize/15, yPos - squareSize/6);
-    // ctx.lineTo(xPos + squareSize/15, yPos - squareSize/6);
-    // ctx.lineTo(xPos + squareSize/6, yPos - squareSize/15);
-    // ctx.lineTo(xPos + squareSize/6, yPos + squareSize/15);
-    // ctx.lineTo(xPos + squareSize/15, yPos + squareSize/6);
-    // ctx.lineTo(xPos - squareSize/15, yPos + squareSize/6);
-    // ctx.lineTo(xPos - squareSize/6, yPos + squareSize/15);
-    // ctx.lineTo(xPos - squareSize/6, yPos - squareSize/15);
-    // ctx.lineTo(xPos - squareSize/15, yPos - squareSize/6);
+    Ctx.beginPath();
+    //Ctx.lineWidth = 1.5;
+    //Ctx.strokeStyle = "#000000";
+    Ctx.fillStyle = color;
+    var xPos = hexPosX(x, y) + SquareSize/2;
+    var yPos = hexPosY(x, y) + SquareSize/2;
+    // Ctx.moveTo(xPos - SquareSize/15, yPos - SquareSize/6);
+    // Ctx.lineTo(xPos + SquareSize/15, yPos - SquareSize/6);
+    // Ctx.lineTo(xPos + SquareSize/6, yPos - SquareSize/15);
+    // Ctx.lineTo(xPos + SquareSize/6, yPos + SquareSize/15);
+    // Ctx.lineTo(xPos + SquareSize/15, yPos + SquareSize/6);
+    // Ctx.lineTo(xPos - SquareSize/15, yPos + SquareSize/6);
+    // Ctx.lineTo(xPos - SquareSize/6, yPos + SquareSize/15);
+    // Ctx.lineTo(xPos - SquareSize/6, yPos - SquareSize/15);
+    // Ctx.lineTo(xPos - SquareSize/15, yPos - SquareSize/6);
 
-    ctx.moveTo(xPos - squareSize/12, yPos - squareSize/5);
-    ctx.lineTo(xPos + squareSize/12, yPos - squareSize/5);
-    ctx.lineTo(xPos + squareSize/5, yPos - squareSize/12);
-    ctx.lineTo(xPos + squareSize/5, yPos + squareSize/12);
-    ctx.lineTo(xPos + squareSize/12, yPos + squareSize/5);
-    ctx.lineTo(xPos - squareSize/12, yPos + squareSize/5);
-    ctx.lineTo(xPos - squareSize/5, yPos + squareSize/12);
-    ctx.lineTo(xPos - squareSize/5, yPos - squareSize/12);
-    ctx.lineTo(xPos - squareSize/12, yPos - squareSize/5);
-    ctx.fill();
+    Ctx.moveTo(xPos - SquareSize/12, yPos - SquareSize/5);
+    Ctx.lineTo(xPos + SquareSize/12, yPos - SquareSize/5);
+    Ctx.lineTo(xPos + SquareSize/5, yPos - SquareSize/12);
+    Ctx.lineTo(xPos + SquareSize/5, yPos + SquareSize/12);
+    Ctx.lineTo(xPos + SquareSize/12, yPos + SquareSize/5);
+    Ctx.lineTo(xPos - SquareSize/12, yPos + SquareSize/5);
+    Ctx.lineTo(xPos - SquareSize/5, yPos + SquareSize/12);
+    Ctx.lineTo(xPos - SquareSize/5, yPos - SquareSize/12);
+    Ctx.lineTo(xPos - SquareSize/12, yPos - SquareSize/5);
+    Ctx.fill();
 }
 
 function drawMoves() {
-    if ((showMoves != []) || (showCaptures != [])) {
-        //var pieceColor = (movingPiece == null ? !playerColor : movingPiece.color);
+    if ((ShowMoves != []) || (ShowCaptures != [])) {
+        //var pieceColor = (movingPiece == null ? !PlayerColor : movingPiece.color);
         var spearblocks = getSpearBlocks(movingPiece != null);
-        for (var i = 0; i < showMoves.length; ++i) {
-            var hex = showMoves[i];
-            if (!containsHex(showCaptures, hex.x, hex.y)) {
+        for (var i = 0; i < ShowMoves.length; ++i) {
+            var hex = ShowMoves[i];
+            if (!containsHex(ShowCaptures, hex.x, hex.y)) {
                 if (containsHex(spearblocks, hex.x, hex.y)) {
                     drawMoveOctagon(hex.x, hex.y, "#0000FF");
                 } else {
@@ -654,8 +654,8 @@ function drawMoves() {
                 }
             }
         }
-        for (var i = 0; i < showCaptures.length; ++i) {
-            hex = showCaptures[i];
+        for (var i = 0; i < ShowCaptures.length; ++i) {
+            hex = ShowCaptures[i];
             if (containsHex(spearblocks, hex.x, hex.y)) {
                 drawMoveOctagon(hex.x, hex.y, "#FF0000");
             } else {
@@ -666,49 +666,49 @@ function drawMoves() {
 }
 
 function draw() {
-    drawTime = (new Date()).getTime();
+    DrawTime = (new Date()).getTime();
     updateAnimations();
-    ctx.clearRect(0, 0, Board.width, Board.height);
-    switch (phase.current) {
-    case phase.loading:
+    Ctx.clearRect(0, 0, BoardCanvas.width, BoardCanvas.height);
+    switch (Phase.current) {
+    case Phase.loading:
         break;
-    case phase.placeKingsTile:
+    case Phase.placeKingsTile:
         drawBaseBoard();
         drawDividerScreen();
         drawKingsTile();
         break;
-    case phase.placeTiles:
+    case Phase.placeTiles:
         drawBaseBoard();
         drawDividerScreen();
         drawTiles();
         break;
-    case phase.placeKing:
+    case Phase.placeKing:
         drawBaseBoard();
         drawDividerScreen();
         drawTiles();
-        drawPiece(playerPieces[0]);
+        drawPiece(PlayerPieces[0]);
         break;
-    case phase.placePieces:
-    case phase.boardComplete:
-    case phase.localSetup:
-    case phase.exchangeBoards:
-    case phase.confirmExchange:
+    case Phase.placePieces:
+    case Phase.boardComplete:
+    case Phase.localSetup:
+    case Phase.exchangeBoards:
+    case Phase.confirmExchange:
         drawBoard();
         drawDividerScreen();
         drawTiles();
-        for (var i = 0; i < playerPieces.length; ++i) {
-            drawPiece(playerPieces[i]);
+        for (var i = 0; i < PlayerPieces.length; ++i) {
+            drawPiece(PlayerPieces[i]);
         }
         break;
     default:
         drawBoard();
-        for (var i = 0; i < opponentPieces.length; ++i) {
-            drawPiece(opponentPieces[i]);
+        for (var i = 0; i < OpponentPieces.length; ++i) {
+            drawPiece(OpponentPieces[i]);
         }
-        for (var i = 0; i < playerPieces.length; ++i) {
-            drawPiece(playerPieces[i]);
+        for (var i = 0; i < PlayerPieces.length; ++i) {
+            drawPiece(PlayerPieces[i]);
         }
-        if (screenAnimation != null) {
+        if (ScreenAnimation != null) {
             drawDividerScreen();
         } else {
             drawCoordinates();
@@ -726,9 +726,9 @@ function draw() {
 }
 
 function redrawCanvasWhenAnimated() {
-    if ((animatingPieces.length > 0) ||
-        (animatingTiles.length > 0) ||
-        (screenAnimation != null)) {
+    if ((AnimatingPieces.length > 0) ||
+        (AnimatingTiles.length > 0) ||
+        (ScreenAnimation != null)) {
 
         draw();
     }

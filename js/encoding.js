@@ -145,15 +145,15 @@ function decodeTiles(text) {
 
 function decodePieces(text) {
     text = base16to4(text.substr(8));
-    text = text.substr(text.length - (3 * totalPieceCount));
+    text = text.substr(text.length - (3 * TotalPieceCount));
     var type = 0;
     var typeCount = 0;
     var pieces = [];
-    while (type < requiredPieceCount.length) {
+    while (type < RequiredPieceCount.length) {
         var posCode = text.substr(3 * pieces.length, 3);
         var y = parseInt(posCode.substr(1), 4);
         pieces[pieces.length] = {type: type, x: parseInt(posCode.charAt(0)) + y + 1, y: y};
-        if (++typeCount == requiredPieceCount[type]) {
+        if (++typeCount == RequiredPieceCount[type]) {
             ++type;
             typeCount = 0;
         }
@@ -185,12 +185,12 @@ function encodeDoubleMove(move1, move2, turnCode, rollCode) {
 }
 
 function encodeLatestMove() {
-    if ((gameHistory.length >= 2) && (gameHistory[gameHistory.length - 2].color == playerColor)) {
-        return encodeDoubleMove(gameHistory[gameHistory.length - 2],
-                                gameHistory[gameHistory.length - 1],
-                                encodeTurn(gameHistory.length), playerRollCode);
+    if ((GameHistory.length >= 2) && (GameHistory[GameHistory.length - 2].color == PlayerColor)) {
+        return encodeDoubleMove(GameHistory[GameHistory.length - 2],
+                                GameHistory[GameHistory.length - 1],
+                                encodeTurn(GameHistory.length), PlayerRollCode);
     } else {
-        return encodeMove(gameHistory[gameHistory.length - 1], encodeTurn(gameHistory.length), playerRollCode);
+        return encodeMove(GameHistory[GameHistory.length - 1], encodeTurn(GameHistory.length), PlayerRollCode);
     }
 }
 

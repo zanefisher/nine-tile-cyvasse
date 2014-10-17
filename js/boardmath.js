@@ -28,26 +28,26 @@ function hexInBounds(x, y) {
 // Determine the X position (left side) of a square at the given hex
 // coordinates.
 function hexPosX(x, y) {
-    return ((x + y) * (squareSize / 2)) + leftMargin;
+    return ((x + y) * (SquareSize / 2)) + LeftMargin;
 }
 
 // Determine the Y position (top) of a square at the given hex coordinates.
 function hexPosY(x, y) {
-    return ((4 - (y - x)) * squareSize) + topMargin;
+    return ((4 - (y - x)) * SquareSize) + TopMargin;
 }
 
 // Determine the position (top left corner) of a square at the given hex
 // coordinates.
 function hexPos(x, y) {
-    return {x: ((x + y) * (squareSize / 2)) + leftMargin,
-            y: ((4 - (y - x)) * squareSize) + topMargin};
+    return {x: ((x + y) * (SquareSize / 2)) + LeftMargin,
+            y: ((4 - (y - x)) * SquareSize) + TopMargin};
 }
 
 // Determine the hex that the given canvas location is within.
 function hexAtPos(x, y) {
-    var tileY = Math.floor((y - topMargin) / squareSize);
-    var offset = (4 - tileY) * (squareSize/2);
-    var tileX = Math.floor(((x - offset) - leftMargin) / squareSize);
+    var tileY = Math.floor((y - TopMargin) / SquareSize);
+    var offset = (4 - tileY) * (SquareSize/2);
+    var tileX = Math.floor(((x - offset) - LeftMargin) / SquareSize);
     return {x: tileX, y: tileX + (4 - tileY)};
 }
 
