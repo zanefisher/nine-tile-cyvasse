@@ -668,7 +668,7 @@ function drawMoves() {
 function draw() {
     DrawTime = (new Date()).getTime();
     updateAnimations();
-    Ctx.clearRect(0, 0, Board.width, Board.height);
+    Ctx.clearRect(0, 0, BoardCanvas.width, BoardCanvas.height);
     switch (Phase.current) {
     case Phase.loading:
         break;

@@ -9,9 +9,6 @@ var grabX = 0;
 var grabY = 0;
 var moved = false;
 
-var ShowMoves = [];
-var ShowCaptures = [];
-
 var lastFrame = (new Date()).getTime();
 
 // Determine which tile, if any, is under the cursor.
@@ -49,9 +46,9 @@ function pieceUnderMouse() {
     return null;
 }
 
-Board.onmousemove = function(event) {
-    mouseX = (event.clientX + document.body.scrollLeft) - (Table.offsetLeft + CanvasCell.offsetLeft + Board.offsetLeft);
-    mouseY = (event.clientY + document.body.scrollTop) - (Table.offsetTop + CanvasCell.offsetTop + Board.offsetTop);
+BoardCanvas.onmousemove = function(event) {
+    mouseX = (event.clientX + document.body.scrollLeft) - (Table.offsetLeft + CanvasCell.offsetLeft + this.offsetLeft);
+    mouseY = (event.clientY + document.body.scrollTop) - (Table.offsetTop + CanvasCell.offsetTop + this.offsetTop);
 
     // dragging
     if (mouseDown) {
@@ -68,9 +65,9 @@ Board.onmousemove = function(event) {
         var piece = pieceUnderMouse();
         var tile = tileUnderMouse();
         if ((piece != null) || ((tile != null) && (Phase.current <= Phase.placeKing))) {
-            Board.style.cursor = "pointer";
+            this.style.cursor = "pointer";
         } else {
-            Board.style.cursor = "default";
+            this.style.cursor = "default";
         }
         if (piece != DisplayedPiece) {
             showPieceInfo(piece);
@@ -107,7 +104,7 @@ function interpretMove(piece, x, y) {
     return move;
 }
 
-Board.onmouseup = function() {
+BoardCanvas.onmouseup = function() {
     mouseDown = false;
 
     // dropping a piece
@@ -123,9 +120,9 @@ Board.onmouseup = function() {
         }
         movingPiece = null;
         if (pieceUnderMouse() != null) {
-            Board.style.cursor = "pointer";
+            this.style.cursor = "pointer";
         } else {
-            Board.style.cursor = "default";
+            this.style.cursor = "default";
         }
 
     // dropping a tile
@@ -141,7 +138,7 @@ Board.onmouseup = function() {
             matchSlot(movingTile);
         }
         movingTile = null;
-        Board.style.cursor = "pointer";
+        this.style.cursor = "pointer";
     }
     
     ShowMoves = [];
@@ -149,7 +146,7 @@ Board.onmouseup = function() {
     draw();
 };
 
-Board.onmousedown = function(event) {
+BoardCanvas.onmousedown = function(event) {
     mouseDown = true;
     var x = mouseX;
     var y = mouseY;
@@ -170,7 +167,7 @@ Board.onmousedown = function(event) {
             grabX = x - movingPieceX;
             grabY = y - movingPieceY;
             moveToBack(piece, (playerOwns(piece) ? PlayerPieces : OpponentPieces));
-            Board.style.cursor = "none";
+            this.style.cursor = "none";
         }
         if (Phase.current >= Phase.playerToMove) { 
             ShowMoves = getMoves(piece);
@@ -182,7 +179,7 @@ Board.onmousedown = function(event) {
         grabY = y - tile.y;
         moveToBack(tile, tiles);
         moved = false;
-        Board.style.cursor = "none";
+        this.style.cursor = "none";
     }
     draw();
     event.preventDefault();

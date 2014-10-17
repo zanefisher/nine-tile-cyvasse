@@ -25,7 +25,7 @@ PieceArt[19] = document.getElementById("BKing");
 
 // Graphics
 
-var Ctx = Board.getContext("2d");
+var Ctx = BoardCanvas.getContext("2d");
 var SquareSize = 50; // in pixels
 var LeftMargin = SquareSize/2;
 var TopMargin = SquareSize;
